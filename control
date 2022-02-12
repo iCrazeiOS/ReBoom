@@ -1,7 +1,7 @@
 Package: com.dtu.reboom
 Name: ReBoom
 Depends: mobilesubstrate
-Version: 1.0
+Version: 1.0.1
 Architecture: iphoneos-arm
 Description: Modding and other goodies for "Boom!"
 Maintainer: doesthisusername & iCraze

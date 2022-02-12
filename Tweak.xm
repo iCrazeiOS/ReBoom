@@ -5,6 +5,13 @@ inline bool GetPrefBool(NSString *key) {
 	return [[[NSDictionary dictionaryWithContentsOfFile:@"/var/mobile/Library/Preferences/com.dtu.reboomprefs.plist"] valueForKey:key] boolValue];
 }
 
+void showAlert(NSString *message, NSString *buttonText) {
+	HSAlertView *delegate = [[%c(HSAlertView) alloc] init]; 
+	HSAlertView *alertView = [[%c(HSAlertView) alloc] initWithTitle:@"ReBoom" message:message delegate:delegate cancelButtonTitle:buttonText otherButtonTitles:nil];
+	alertView.cancelButtonIndex = 0;
+	[alertView show];
+}
+
 // TAS MODE
 void loadMovie(NSString *name) {
 	if (LOGS_ENABLED) NSLog(@"Loading TAS recording with name: %@", name);
@@ -182,12 +189,8 @@ void saveRecording(NSString *name) {
 	if (GetPrefBool(@"RecordMode") && recording != NULL && ![recording isEqual:@""]) {
 		if (LOGS_ENABLED) NSLog(@"[TrialSession goal] saving...");
 		saveRecording([[NSString alloc] initWithFormat:@"%@", [self SEL(levelId)]]);
-
-		HSAlertView *delegate = [[%c(HSAlertView) alloc] init]; 
-		HSAlertView *alertView = [[%c(HSAlertView) alloc] initWithTitle:@"Saved recording"  message:nil delegate:delegate cancelButtonTitle:@"Dismiss" otherButtonTitles:nil];
 		
-		alertView.cancelButtonIndex = 0;
-		[alertView show];
+		showAlert(@"Saved recording", @"Dismiss");
 	}
 
 	%orig;
@@ -328,21 +331,29 @@ void saveRecording(NSString *name) {
 
 
 
+
+
+
 /* EXPERIMENTAL IN-GAME PREFS */
 
 
 // @interface Settings : UITableView
 // @end
 
+// @interface HSUISwitch : NSObject
+// +(HSUISwitch *)switchWithState:(id)state offFont:(id)font onFont:(id)font3 onStateChange:(id)change;
+// -(HSUISwitch *)initWithState:(id)state offFont:(id)font onFont:(id)font3 onStateChange:(id)change;
+// @end
+
 // @interface SettingsItem : UITableViewCell
 // +(SettingsItem *)itemWithTitle:(NSString *)title value:(NSString *)value type:(int)type;
 // -(void)setTitle:(NSString *)title;
 // -(UILabel *)titleLabel;
+// -(void)setSwitchElement:(HSUISwitch *)element state:(int)state;
+// @property(readonly, assign, nonatomic) HSUISwitch* switchElement;
 // @end
 
-
 // SettingsItem *newItem = [%c(SettingsItem) alloc];
-
 
 // %hook Settings
 // -(NSInteger) numberOfSectionsInTableView:(UITableView*)tableView {
@@ -354,10 +365,10 @@ void saveRecording(NSString *name) {
 // }
 
 // -(id)tableView:(id)view cellForRowAtIndexPath:(id)indexPath {
-// 	NSIndexPat *index = indexPath;
+// 	NSIndexPath *index = indexPath;
 
 // 	if (index.section == 1 && index.row == 0) {
-// 		newItem = [%c(SettingsItem) itemWithTitle:@"ReBoom" value:@"Enabled" type:2];
+// 		newItem = [%c(SettingsItem) itemWithTitle:@"ReBoom" value:@"" type:2];
 // 		return newItem;
 // 	}
 	
