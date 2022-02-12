@@ -1,10 +1,5 @@
 #import "Tweak.h"
 
-inline bool GetPrefBool(NSString *key) {
-	// change this to be <Boom!>/Documents/!prefs.plist
-	return [[[NSDictionary dictionaryWithContentsOfFile:@"/var/mobile/Library/Preferences/com.dtu.reboomprefs.plist"] valueForKey:key] boolValue];
-}
-
 void showAlert(NSString *message, NSString *buttonText) {
 	HSAlertView *delegate = [[%c(HSAlertView) alloc] init]; 
 	HSAlertView *alertView = [[%c(HSAlertView) alloc] initWithTitle:@"ReBoom" message:message delegate:delegate cancelButtonTitle:buttonText otherButtonTitles:nil];
@@ -12,9 +7,57 @@ void showAlert(NSString *message, NSString *buttonText) {
 	[alertView show];
 }
 
+inline bool GetPrefBool(NSString *key) {
+	// return [[[NSDictionary dictionaryWithContentsOfFile:@"/var/mobile/Library/Preferences/com.dtu.reboomprefs.plist"] valueForKey:key] boolValue];
+	NSString *path = [NSString stringWithFormat:@"%@/!prefs.plist", [[[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] firstObject] path]];
+
+	// showAlert(path, @"ok");
+	// NSLog(@"ReBoom: %@", path);
+
+	if (![[NSFileManager defaultManager] fileExistsAtPath:path]) {
+		[[NSFileManager defaultManager] createFileAtPath:path contents:nil attributes:nil];
+	}
+	NSMutableDictionary *prefsDict = [NSMutableDictionary dictionary];
+	[prefsDict addEntriesFromDictionary:[NSDictionary dictionaryWithContentsOfFile:path]];
+
+	if (![[prefsDict allKeys] containsObject:key]) {
+		[prefsDict setValue:@(NO) forKey:key];
+		[prefsDict writeToFile:path atomically:YES];
+		return GetPrefBool(key);
+	}
+
+	NSString *value = [prefsDict valueForKey:key];
+
+	if (!value) {
+		[prefsDict setValue:@(NO) forKey:key];
+		[prefsDict writeToFile:path atomically:YES];
+		return GetPrefBool(key);
+	}
+
+	// showAlert([NSString stringWithFormat:@"%@: %@", key, [key boolValue] ? @"YES": @"NO"], @"OK");
+
+	return [value boolValue];
+
+	// return [[[NSDictionary dictionaryWithContentsOfFile:path] valueForKey:key] boolValue];
+}
+
+inline void SetPrefBool(NSString *key, BOOL value) {
+	// return [[[NSDictionary dictionaryWithContentsOfFile:@"/var/mobile/Library/Preferences/com.dtu.reboomprefs.plist"] valueForKey:key] boolValue];
+	// NSDictionary *prefsDict = [NSDictionary dictionaryWithContentsOfFile:];
+	// [prefsDict setValue:value forKey:key];
+
+	// NSLog(@"[iCraze Boom] called set");
+
+	NSString *path = [NSString stringWithFormat:@"%@/!prefs.plist", [[[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] firstObject] path]];
+	NSMutableDictionary *prefsDict = [NSMutableDictionary dictionary];
+	[prefsDict addEntriesFromDictionary:[NSDictionary dictionaryWithContentsOfFile:path]];
+	[prefsDict setObject:(value ? @"YES" : @"NO") forKey:key];
+	[prefsDict writeToFile:path atomically:YES];
+}
+
 // TAS MODE
 void loadMovie(NSString *name) {
-	if (LOGS_ENABLED) NSLog(@"Loading TAS recording with name: %@", name);
+	if (LOGS_ENABLED) NSLog(@"[ReBoom] Loading TAS recording with name: %@", name);
 	tas.length = 0;
 	tas.commands = [[NSMutableArray alloc] init];
 
@@ -118,16 +161,28 @@ void saveRecording(NSString *name) {
 	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 %end
+
+
+BOOL clickedLeft = NO;
+BOOL clickedRight = NO;
+BOOL running = NO;
+// int progress = 0;
+
 %hook TrialSession
 -(void)restartLevel {
 	%orig;
+
+	running = NO;
+	// progress = 1;
+
+	// NSLog(@"[ReBoom] Restarting level...");
 
 	// unlock next level
 	if (GetPrefBool(@"EverythingUnlocked")) [handler SEL(unLockNextLevel)];
 
 	// replay mode
 	if (GetPrefBool(@"TASMode") && ![self SEL(isChallenge)] && ![self SEL(isTournament)]) {
-		if (LOGS_ENABLED) NSLog(@"[TrialSession restartLevel] loading TAS recording...");
+		if (LOGS_ENABLED) NSLog(@"[ReBoom] [TrialSession restartLevel] loading TAS recording...");
 		loadMovie([self SEL(levelId)]);
 	}
 
@@ -150,6 +205,14 @@ void saveRecording(NSString *name) {
 	if (GetPrefBool(@"TASMode") && ![self SEL(isChallenge)] && ![self SEL(isTournament)]) {
 		if (tas.length > 0 && frameID < tas.length && leftButton != NULL && rightButton != NULL && [tas.commands[frameID] length] > 0) {
 			const NSString *list = tas.commands[frameID];
+
+			if (clickedLeft && clickedRight) {
+				clickedLeft = NO;
+				clickedRight = NO;
+				[self restartLevel];
+			}
+
+			running = YES;
 			
 			for (int i = 0; i < [list length]; i++) {
 				switch([list characterAtIndex:i]) {
@@ -203,6 +266,7 @@ void saveRecording(NSString *name) {
 	if (LOGS_ENABLED) NSLog(@"[HSMenuItem selected] called");
 	if (GetPrefBool(@"RecordMode") && recording != NULL) {
 		if (self == leftButton) {
+			if (!running) clickedLeft = YES;
 			if (LOGS_ENABLED) NSLog(@"[HSMenuItem selected] leftButton called");
 			if (lastFrameID < frameID + 1) {
 				if (LOGS_ENABLED) NSLog(@"[HSMenuItem selected] leftButton appending");
@@ -212,6 +276,7 @@ void saveRecording(NSString *name) {
 
 			[recording appendString:@" ld"];
 		} else if (self == rightButton) {
+			if (!running) clickedRight = YES;
 			if (LOGS_ENABLED) NSLog(@"[HSMenuItem selected] rightButton called");
 			if (lastFrameID < frameID + 1) {
 				if (LOGS_ENABLED) NSLog(@"[HSMenuItem selected] rightButton appending");
@@ -337,51 +402,156 @@ void saveRecording(NSString *name) {
 /* EXPERIMENTAL IN-GAME PREFS */
 
 
-// @interface Settings : UITableView
-// @end
+@interface Settings : UITableView
+@end
 
-// @interface HSUISwitch : NSObject
-// +(HSUISwitch *)switchWithState:(id)state offFont:(id)font onFont:(id)font3 onStateChange:(id)change;
-// -(HSUISwitch *)initWithState:(id)state offFont:(id)font onFont:(id)font3 onStateChange:(id)change;
-// @end
+@interface HSUISwitch : NSObject
++(HSUISwitch *)switchWithState:(id)state offFont:(id)font onFont:(id)font3 onStateChange:(id)change;
+-(HSUISwitch *)initWithState:(id)state offFont:(id)font onFont:(id)font3 onStateChange:(id)change;
+@end
 
-// @interface SettingsItem : UITableViewCell
-// +(SettingsItem *)itemWithTitle:(NSString *)title value:(NSString *)value type:(int)type;
-// -(void)setTitle:(NSString *)title;
-// -(UILabel *)titleLabel;
-// -(void)setSwitchElement:(HSUISwitch *)element state:(int)state;
-// @property(readonly, assign, nonatomic) HSUISwitch* switchElement;
-// @end
+@interface CCLabelTTF : NSObject {
+	NSString *string_;
+}
+@end
 
-// SettingsItem *newItem = [%c(SettingsItem) alloc];
+@interface SettingsItem : UITableViewCell {
+	CCLabelTTF* valueLabel;
+}
+@property (readwrite, assign) NSString *ReBoom_PrefValue;
++(SettingsItem *)itemWithTitle:(NSString *)title value:(NSString *)value type:(int)type;
+-(void)setTitle:(NSString *)title;
+-(void)setValue:(NSString *)title;
+-(UILabel *)titleLabel;
+-(void)setSwitchElement:(HSUISwitch *)element state:(int)state;
+@property(readonly, assign, nonatomic) HSUISwitch* switchElement;
+-(void)selected;
+-(void)unselected;
+@end
 
-// %hook Settings
-// -(NSInteger) numberOfSectionsInTableView:(UITableView*)tableView {
-// 	return 2;
-// }
+SettingsItem *replayItem;
+SettingsItem *recordItem;
 
-// -(int)tableView:(id)view numberOfRowsInSection:(int)section {
-// 	return section == 1 ? 1 : %orig;
-// }
+%hook Settings
+-(NSInteger) numberOfSectionsInTableView:(UITableView*)tableView {
+	return 4;
+}
 
-// -(id)tableView:(id)view cellForRowAtIndexPath:(id)indexPath {
-// 	NSIndexPath *index = indexPath;
+-(int)tableView:(id)view numberOfRowsInSection:(int)section {
+	int ret = %orig;
+	if (section == 1) ret = 3;
+	else if (section == 2) ret = 3;
+	else if (section == 3) ret = 4;
+	return ret;
+}
 
-// 	if (index.section == 1 && index.row == 0) {
-// 		newItem = [%c(SettingsItem) itemWithTitle:@"ReBoom" value:@"" type:2];
-// 		return newItem;
-// 	}
+-(id)tableView:(id)view cellForRowAtIndexPath:(id)indexPath {
+	NSIndexPath *index = indexPath;
+
+	switch (index.section) {
+		case 1:
+			switch (index.row) {
+				case 0:
+					SettingsItem *pauseItem;
+					pauseItem = [%c(SettingsItem) itemWithTitle:@"Pause Bug" value:(GetPrefBool(@"PauseBug") ? @"Enabled" : @"Disabled") type:1];
+					pauseItem.ReBoom_PrefValue = @"PauseBug";
+					return pauseItem;
+				case 1:
+					SettingsItem *unlockItem;
+					unlockItem = [%c(SettingsItem) itemWithTitle:@"Everything Unlocked" value:(GetPrefBool(@"EverythingUnlocked") ? @"Enabled" : @"Disabled") type:1];
+					unlockItem.ReBoom_PrefValue = @"EverythingUnlocked";
+					return unlockItem;
+				case 2:
+					SettingsItem *icloudItem;
+					icloudItem = [%c(SettingsItem) itemWithTitle:@"Disable iCloud" value:(GetPrefBool(@"DisableICloud") ? @"Enabled" : @"Disabled") type:1];
+					icloudItem.ReBoom_PrefValue = @"DisableICloud";
+					return icloudItem;
+				default:
+					return [%c(SettingsItem) itemWithTitle:@"Unknown" value:@"Unknown" type:1];
+			}
+		case 2:
+			switch (index.row) {
+				case 0:
+					replayItem = [%c(SettingsItem) itemWithTitle:@"Replay Mode" value:(GetPrefBool(@"TASMode") ? @"Enabled" : @"Disabled") type:1];
+					replayItem.ReBoom_PrefValue = @"TASMode";
+					return replayItem;
+				case 1:
+					recordItem = [%c(SettingsItem) itemWithTitle:@"Record Mode" value:(GetPrefBool(@"RecordMode") ? @"Enabled" : @"Disabled") type:1];
+					recordItem.ReBoom_PrefValue = @"RecordMode";
+					return recordItem;
+				case 2:
+					SettingsItem *deltaItem;
+					deltaItem = [%c(SettingsItem) itemWithTitle:@"Fixed Delta Time" value:(GetPrefBool(@"FixedDelta") ? @"Enabled" : @"Disabled") type:1];
+					deltaItem.ReBoom_PrefValue = @"FixedDelta";
+					return deltaItem;
+				default:
+					return [%c(SettingsItem) itemWithTitle:@"Unknown" value:@"Unknown" type:1];
+			}
+		case 3:
+			switch (index.row) {
+				case 0:
+					SettingsItem *checksumItem;
+					checksumItem = [%c(SettingsItem) itemWithTitle:@"Disable Checksums" value:(GetPrefBool(@"DisableChecksum") ? @"Enabled" : @"Disabled") type:1];
+					checksumItem.ReBoom_PrefValue = @"DisableChecksum";
+					return checksumItem;
+				case 1:
+					SettingsItem *requestItem;
+					requestItem = [%c(SettingsItem) itemWithTitle:@"Log Requests" value:(GetPrefBool(@"LogRequest") ? @"Enabled" : @"Disabled") type:1];
+					requestItem.ReBoom_PrefValue = @"LogRequest";
+					return requestItem;
+				case 2:
+					SettingsItem *responseItem;
+					responseItem = [%c(SettingsItem) itemWithTitle:@"Log Responses" value:(GetPrefBool(@"LogResponse") ? @"Enabled" : @"Disabled") type:1];
+					responseItem.ReBoom_PrefValue = @"LogResponse";
+					return responseItem;
+				case 3:
+					SettingsItem *encryptionItem;
+					encryptionItem = [%c(SettingsItem) itemWithTitle:@"Disable Encryption" value:(GetPrefBool(@"DisableEncryption") ? @"Enabled" : @"Disabled") type:1];
+					encryptionItem.ReBoom_PrefValue = @"DisableEncryption";
+					return encryptionItem;
+				default:
+					return [%c(SettingsItem) itemWithTitle:@"ReBoom" value:@"Error" type:1];
+			}
+		default:
+			return %orig;
+	}
 	
-// 	return %orig;
-// }
-// %end
+	return %orig;
+}
+%end
 
-// %hook SettingsItem
-// -(id)itemForTouch:(id)touch {
-// 	SettingsItem *settingsItem = %orig;
-// 	if (settingsItem == newItem) {
-// 		[[self titleLabel].text isEqualToString:@"Enabled"] ? [self setTitle:@"Disabled"] : [self setTitle:@"Enabled"];
-// 	}
-// 	return %orig;
-// }
-// %end
+%hook SettingsItem
+%property (strong) NSString *ReBoom_PrefValue;
+-(void)unselected {
+	SettingsItem *settingsItem = self;
+	if (settingsItem.ReBoom_PrefValue) {
+		NSLog(@"[iCraze Boom] called onclick");
+		if ([[[self valueForKey:@"valueLabel"] valueForKey:@"string_"] isEqualToString:@"Enabled"]) {
+			SetPrefBool(settingsItem.ReBoom_PrefValue, NO);
+			[self setValue:@"Disabled"];
+		} else {
+			SetPrefBool(settingsItem.ReBoom_PrefValue, YES);
+			[self setValue:@"Enabled"];
+
+			if (self == replayItem && [[[recordItem valueForKey:@"valueLabel"] valueForKey:@"string_"] isEqualToString:@"Enabled"]) {
+				[recordItem selected];
+				[recordItem unselected];
+			} else if (self == recordItem && [[[replayItem valueForKey:@"valueLabel"] valueForKey:@"string_"] isEqualToString:@"Enabled"]) {
+				[replayItem selected];
+				[replayItem unselected];
+			}
+		}
+	}
+	%orig;
+}
+%end
+
+
+
+
+
+%ctor {
+	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1.5 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+		showAlert(@"To record a TAS: Start a level then click restart.\n\nTo replay a TAS: Start a level, move left & right, then click restart.", @"Got it!");
+	});
+}

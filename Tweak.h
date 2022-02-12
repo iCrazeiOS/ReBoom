@@ -11,6 +11,9 @@ BOOL LOGS_ENABLED = NO;
 // #define MSG0S(rt,r,x,y) ((void(*)(rt, id, SEL))objc_msgSend_stret)(r, x, @selector(y))    // armv7
 #define MSG0S(rt,r,x,y) ((void(*)(rt, id, SEL))objc_msgSend)(r, x, @selector(y))	// arm64(e)
 
+@interface TrialSession : NSObject
+-(void)restartLevel;
+@end
 
 /* TAS STRUCT START */
 
