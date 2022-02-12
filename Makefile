@@ -4,14 +4,14 @@ export SDKVERSION = 14.4
 
 include $(THEOS)/makefiles/common.mk
 
-TWEAK_NAME = BoomPatches
-BoomPatches_FILES = Tweak.xm
-BoomPatches_FRAMEWORKS = UIKit CoreFoundation
-BoomPatches_FRAMEWORKS_CFLAGS = -fobjc-arc
+TWEAK_NAME = ReBoom
+ReBoom_FILES = Tweak.xm
+ReBoom_FRAMEWORKS = UIKit CoreFoundation
+ReBoom_FRAMEWORKS_CFLAGS = -fobjc-arc
 
 include $(THEOS_MAKE_PATH)/tweak.mk
 
 after-install::
 	install.exec "killall -9 Boom!"
-SUBPROJECTS += boompatchesprefs
+SUBPROJECTS += reboomprefs
 include $(THEOS_MAKE_PATH)/aggregate.mk

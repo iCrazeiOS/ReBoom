@@ -16,7 +16,7 @@
 			<key>default</key>
 			<false/>
 			<key>defaults</key>
-			<string>com.dtu.boompatchesprefs</string>
+			<string>com.dtu.reboomprefs</string>
 			<key>key</key>
 			<string>PauseBug</string>
 			<key>label</key>
@@ -28,7 +28,7 @@
 			<key>default</key>
 			<false/>
 			<key>defaults</key>
-			<string>com.dtu.boompatchesprefs</string>
+			<string>com.dtu.reboomprefs</string>
 			<key>key</key>
 			<string>EverythingUnlocked</string>
 			<key>label</key>
@@ -40,7 +40,7 @@
 			<key>default</key>
 			<false/>
 			<key>defaults</key>
-			<string>com.dtu.boompatchesprefs</string>
+			<string>com.dtu.reboomprefs</string>
 			<key>key</key>
 			<string>DisableICloud</string>
 			<key>label</key>
@@ -58,7 +58,7 @@
 			<key>default</key>
 			<false/>
 			<key>defaults</key>
-			<string>com.dtu.boompatchesprefs</string>
+			<string>com.dtu.reboomprefs</string>
 			<key>key</key>
 			<string>TASMode</string>
 			<key>label</key>
@@ -70,7 +70,7 @@
 			<key>default</key>
 			<false/>
 			<key>defaults</key>
-			<string>com.dtu.boompatchesprefs</string>
+			<string>com.dtu.reboomprefs</string>
 			<key>key</key>
 			<string>RecordMode</string>
 			<key>label</key>
@@ -82,7 +82,7 @@
 			<key>default</key>
 			<false/>
 			<key>defaults</key>
-			<string>com.dtu.boompatchesprefs</string>
+			<string>com.dtu.reboomprefs</string>
 			<key>key</key>
 			<string>FixedDelta</string>
 			<key>label</key>
@@ -100,7 +100,7 @@
 			<key>default</key>
 			<false/>
 			<key>defaults</key>
-			<string>com.dtu.boompatchesprefs</string>
+			<string>com.dtu.reboomprefs</string>
 			<key>key</key>
 			<string>DisableChecksum</string>
 			<key>label</key>
@@ -112,7 +112,7 @@
 			<key>default</key>
 			<false/>
 			<key>defaults</key>
-			<string>com.dtu.boompatchesprefs</string>
+			<string>com.dtu.reboomprefs</string>
 			<key>key</key>
 			<string>LogRequest</string>
 			<key>label</key>
@@ -124,7 +124,7 @@
 			<key>default</key>
 			<false/>
 			<key>defaults</key>
-			<string>com.dtu.boompatchesprefs</string>
+			<string>com.dtu.reboomprefs</string>
 			<key>key</key>
 			<string>LogResponse</string>
 			<key>label</key>
@@ -136,7 +136,7 @@
 			<key>default</key>
 			<false/>
 			<key>defaults</key>
-			<string>com.dtu.boompatchesprefs</string>
+			<string>com.dtu.reboomprefs</string>
 			<key>key</key>
 			<string>DisableEncryption</string>
 			<key>label</key>
@@ -144,6 +144,6 @@
 		</dict>
 	</array>
 	<key>title</key>
-	<string>BoomPatches</string>
+	<string>ReBoom</string>
 </dict>
 </plist>

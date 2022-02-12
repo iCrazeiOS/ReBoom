@@ -1,21 +1,22 @@
 #import "Tweak.h"
 
 inline bool GetPrefBool(NSString *key) {
-	return [[[NSDictionary dictionaryWithContentsOfFile:@"/var/mobile/Library/Preferences/com.dtu.boompatchesprefs.plist"] valueForKey:key] boolValue];
+	// change this to be <Boom!>/Documents/!prefs.plist
+	return [[[NSDictionary dictionaryWithContentsOfFile:@"/var/mobile/Library/Preferences/com.dtu.reboomprefs.plist"] valueForKey:key] boolValue];
 }
 
 // TAS MODE
 void loadMovie(NSString *name) {
-	if (LOGS_ENABLED) NSLog(@"[iCraze Boom] loading TAS recording with name: %@", name);
+	if (LOGS_ENABLED) NSLog(@"Loading TAS recording with name: %@", name);
 	tas.length = 0;
 	tas.commands = [[NSMutableArray alloc] init];
 
 	NSString *path = [NSString stringWithFormat:@"%@/%@%@", [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] firstObject].path, name, TAS_EXT];
 	if (![[NSFileManager defaultManager] fileExistsAtPath:path]) {
-		if (LOGS_ENABLED) NSLog(@"[iCraze Boom] TAS recording file not found at path: %@", path);
+		if (LOGS_ENABLED) NSLog(@"TAS recording file not found at path: %@", path);
 		return;
 	}
-	if (LOGS_ENABLED) NSLog(@"[iCraze Boom] TAS recording file found at path: %@", path);
+	if (LOGS_ENABLED) NSLog(@"TAS recording file found at path: %@", path);
 
 	NSString *fileContent = [[NSString alloc] initWithContentsOfFile:path encoding:NSUTF8StringEncoding error:nil];
 	NSArray *lines = [fileContent componentsSeparatedByString:@"\n"];
@@ -66,7 +67,7 @@ void saveRecording(NSString *name) {
 	NSURL *path = [NSURL URLWithString: [NSString stringWithFormat:@"%@%@%@", [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] firstObject], name, TAS_EXT]];
 	[recording writeToURL:path atomically:NO encoding:NSASCIIStringEncoding error:NULL];
 
-	if (LOGS_ENABLED) NSLog(@"[iCraze Boom] Saved to %@!", path);
+	if (LOGS_ENABLED) NSLog(@"Saved to %@!", path);
 }
 
 // PAUSE BUG
@@ -114,15 +115,16 @@ void saveRecording(NSString *name) {
 -(void)restartLevel {
 	%orig;
 
-	if (GetPrefBool(@"EverythingUnlocked")) {
-		[handler SEL(unLockNextLevel)];
-	}
+	// unlock next level
+	if (GetPrefBool(@"EverythingUnlocked")) [handler SEL(unLockNextLevel)];
 
+	// replay mode
 	if (GetPrefBool(@"TASMode") && ![self SEL(isChallenge)] && ![self SEL(isTournament)]) {
-		if (LOGS_ENABLED) NSLog(@"[iCraze Boom] [TrialSession restartLevel] loading TAS recording...");
+		if (LOGS_ENABLED) NSLog(@"[TrialSession restartLevel] loading TAS recording...");
 		loadMovie([self SEL(levelId)]);
 	}
 
+	// record mode
 	if (GetPrefBool(@"RecordMode")) {
 		if (recording == NULL) {
 			recording = [[NSMutableString alloc] init];
@@ -176,9 +178,9 @@ void saveRecording(NSString *name) {
 
 // on win
 -(void)goal:(float)a {
-	if (LOGS_ENABLED) NSLog(@"[iCraze Boom] [TrialSession goal] called");
+	if (LOGS_ENABLED) NSLog(@"[TrialSession goal] called");
 	if (GetPrefBool(@"RecordMode") && recording != NULL && ![recording isEqual:@""]) {
-		if (LOGS_ENABLED) NSLog(@"[iCraze Boom] [TrialSession goal] saving...");
+		if (LOGS_ENABLED) NSLog(@"[TrialSession goal] saving...");
 		saveRecording([[NSString alloc] initWithFormat:@"%@", [self SEL(levelId)]]);
 
 		HSAlertView *delegate = [[%c(HSAlertView) alloc] init]; 
@@ -195,50 +197,48 @@ void saveRecording(NSString *name) {
 // FINDING BUTTONS and RECORDING
 %hook HSMenuItem
 -(void)selected {
-	if (LOGS_ENABLED) NSLog(@"[iCraze Boom] [HSMenuItem selected] called");
+	if (LOGS_ENABLED) NSLog(@"[HSMenuItem selected] called");
 	if (GetPrefBool(@"RecordMode") && recording != NULL) {
 		if (self == leftButton) {
-			if (LOGS_ENABLED) NSLog(@"[iCraze Boom] [HSMenuItem selected] leftButton called");
+			if (LOGS_ENABLED) NSLog(@"[HSMenuItem selected] leftButton called");
 			if (lastFrameID < frameID + 1) {
-				if (LOGS_ENABLED) NSLog(@"[iCraze Boom] [HSMenuItem selected] leftButton appending");
+				if (LOGS_ENABLED) NSLog(@"[HSMenuItem selected] leftButton appending");
 				[recording appendFormat:frameID == 0 ? @"%04lu :" : @"\n%04lu :", frameID + 1];
 				lastFrameID = frameID + 1;
 			}
 
 			[recording appendString:@" ld"];
 		} else if (self == rightButton) {
-			if (LOGS_ENABLED) NSLog(@"[iCraze Boom] [HSMenuItem selected] rightButton called");
+			if (LOGS_ENABLED) NSLog(@"[HSMenuItem selected] rightButton called");
 			if (lastFrameID < frameID + 1) {
-				if (LOGS_ENABLED) NSLog(@"[iCraze Boom] [HSMenuItem selected] rightButton appending");
+				if (LOGS_ENABLED) NSLog(@"[HSMenuItem selected] rightButton appending");
 				[recording appendFormat:frameID == 0 ? @"%04lu :" : @"\n%04lu :", frameID + 1];
 				lastFrameID = frameID + 1;
 			}
 
 			[recording appendString:@" rd"];
 		}
-	} else {
-		if (LOGS_ENABLED) NSLog(@"[iCraze Boom] [HSMenuItem selected] not recording. RecordMode: %@", GetPrefBool(@"RecordMode") ? @"YES" : @"NO");
-	}
+	} else if (LOGS_ENABLED) NSLog(@"[HSMenuItem selected] not recording. RecordMode: %@", GetPrefBool(@"RecordMode") ? @"YES" : @"NO");
 
 	%orig;
 }
 
 -(void)unselected {
-	if (LOGS_ENABLED) NSLog(@"[iCraze Boom] [HSMenuItem unselected] called");
+	if (LOGS_ENABLED) NSLog(@"[HSMenuItem unselected] called");
 	if (GetPrefBool(@"RecordMode") && recording != NULL) {
 		if (self == leftButton) {
-			if (LOGS_ENABLED) NSLog(@"[iCraze Boom] [HSMenuItem unselected] leftButton called");
+			if (LOGS_ENABLED) NSLog(@"[HSMenuItem unselected] leftButton called");
 			if (lastFrameID < frameID + 1) {
-				if (LOGS_ENABLED) NSLog(@"[iCraze Boom] [HSMenuItem unselected] leftButton appending");
+				if (LOGS_ENABLED) NSLog(@"[HSMenuItem unselected] leftButton appending");
 				[recording appendFormat:frameID == 0 ? @"%04lu :" : @"\n%04lu :", frameID + 1];
 				lastFrameID = frameID + 1;
 			}
 
 			[recording appendString:@" lu"];
 		} else if (self == rightButton) {
-			if (LOGS_ENABLED) NSLog(@"[iCraze Boom] [HSMenuItem unselected] rightButton called");
+			if (LOGS_ENABLED) NSLog(@"[HSMenuItem unselected] rightButton called");
 			if (lastFrameID < frameID + 1) {
-				if (LOGS_ENABLED) NSLog(@"[iCraze Boom] [HSMenuItem unselected] rightButton appending");
+				if (LOGS_ENABLED) NSLog(@"[HSMenuItem unselected] rightButton appending");
 				[recording appendFormat:frameID == 0 ? @"%04lu :" : @"\n%04lu :", frameID + 1];
 				lastFrameID = frameID + 1;
 			}
@@ -253,14 +253,14 @@ void saveRecording(NSString *name) {
 -(struct CGRect)rect {
 	CGRect rec = %orig;
 
-	if (LOGS_ENABLED) NSLog(@"[iCraze Boom] [HSMenuItem rect] called - looking for buttons");
+	if (LOGS_ENABLED) NSLog(@"[HSMenuItem rect] called - looking for buttons");
 
 	if (rec.size.width == 200.0f && rec.size.height == 150.0f) {
 		rightButton = self;
-		if (LOGS_ENABLED) NSLog(@"[iCraze Boom] [TrialSession rect] found right button: %@", rightButton);
+		if (LOGS_ENABLED) NSLog(@"[TrialSession rect] found right button: %@", rightButton);
 	} else if (rec.size.width == 400.0f && rec.size.height == 150.0f) {
 		leftButton = self;
-		if (LOGS_ENABLED) NSLog(@"[iCraze Boom] [TrialSession rect] found left button: %@", leftButton);
+		if (LOGS_ENABLED) NSLog(@"[TrialSession rect] found left button: %@", leftButton);
 	}
 
 	return rec;
@@ -357,7 +357,7 @@ void saveRecording(NSString *name) {
 // 	NSIndexPat *index = indexPath;
 
 // 	if (index.section == 1 && index.row == 0) {
-// 		newItem = [%c(SettingsItem) itemWithTitle:@"iCraze" value:@"Enabled" type:2];
+// 		newItem = [%c(SettingsItem) itemWithTitle:@"ReBoom" value:@"Enabled" type:2];
 // 		return newItem;
 // 	}
 	

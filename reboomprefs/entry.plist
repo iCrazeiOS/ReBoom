@@ -5,17 +5,17 @@
 	<key>entry</key>
 	<dict>
 		<key>bundle</key>
-		<string>BoomPatchesPrefs</string>
+		<string>ReBoomPrefs</string>
 		<key>cell</key>
 		<string>PSLinkCell</string>
 		<key>detail</key>
-		<string>BPPRootListController</string>
+		<string>RBMRootListController</string>
 		<key>icon</key>
 		<string>icon.png</string>
 		<key>isController</key>
 		<true/>
 		<key>label</key>
-		<string>BoomPatches</string>
+		<string>ReBoom</string>
 	</dict>
 </dict>
 </plist>

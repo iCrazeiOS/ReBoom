@@ -1,5 +1,5 @@
-Package: com.dtu.boompatches
-Name: BoomPatches
+Package: com.dtu.reboom
+Name: ReBoom
 Depends: mobilesubstrate
 Version: 1.0
 Architecture: iphoneos-arm

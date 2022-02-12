@@ -3,12 +3,13 @@
 
 BOOL LOGS_ENABLED = NO;
 
-#define PLIST_PATH @"/var/mobile/Library/Preferences/com.dtu.boompatchesprefs.plist"
 #define TAS_EXT @".btas"
 #define FIXED_DELTA (1.0f / 60.0f)
+
 #define SEL(x) performSelector:@selector(x)
+
 // #define MSG0S(rt,r,x,y) ((void(*)(rt, id, SEL))objc_msgSend_stret)(r, x, @selector(y))    // armv7
-#define MSG0S(rt,r,x,y) ((void(*)(rt, id, SEL))objc_msgSend)(r, x, @selector(y))
+#define MSG0S(rt,r,x,y) ((void(*)(rt, id, SEL))objc_msgSend)(r, x, @selector(y))	// arm64(e)
 
 
 /* TAS STRUCT START */
