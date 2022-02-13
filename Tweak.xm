@@ -381,14 +381,6 @@ BOOL running = NO;
 
 /*  IN-GAME PREFS */
 
-@interface SettingsItem : UITableViewCell
-@property (readwrite, assign) NSString *ReBoom_PrefValue;
-+(SettingsItem *)itemWithTitle:(NSString *)title value:(NSString *)value type:(int)type;
--(void)setValue:(NSString *)title;
--(void)selected;
--(void)unselected;
-@end
-
 SettingsItem *replayItem;
 SettingsItem *recordItem;
 

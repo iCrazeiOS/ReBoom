@@ -15,6 +15,14 @@ BOOL LOGS_ENABLED = NO;
 -(void)restartLevel;
 @end
 
+@interface SettingsItem : UITableViewCell
+@property (readwrite, assign) NSString *ReBoom_PrefValue;
++(SettingsItem *)itemWithTitle:(NSString *)title value:(NSString *)value type:(int)type;
+-(void)setValue:(NSString *)title;
+-(void)selected;
+-(void)unselected;
+@end
+
 /* TAS STRUCT START */
 
 struct Movie {
