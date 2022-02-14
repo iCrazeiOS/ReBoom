@@ -328,14 +328,14 @@ void saveRecording(NSString *name) {
 
 // Unlock Everything
 %hook Player
--(BOOL)hasItem:(id)item id:(id)b {
+-(BOOL)hasItem:(id)item id:(id)anId {
 	return GetPrefBool(@"EverythingUnlocked") ? YES : %orig;
 }
 %end
 
 // Disable iCloud
 %hook Player
--(BOOL)switchToICloudPlayer:(id)player {
+-(BOOL)switchToICloudPlayer:(id)icloudPlayer {
 	return GetPrefBool(@"DisableICloud") ? NO : %orig;
 }
 %end
