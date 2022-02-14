@@ -20,6 +20,7 @@ BOOL LOGS_ENABLED = NO;
 -(void)pause;
 -(id)wheely;
 -(NSString *)levelId;
++(id)currentSession;
 @end
 
 @interface SettingsItem : UITableViewCell

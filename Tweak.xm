@@ -4,7 +4,6 @@
 void showAlert(NSString *message, NSString *buttonText) {
 	HSAlertView *delegate = [[%c(HSAlertView) alloc] init]; 
 	HSAlertView *alertView = [[%c(HSAlertView) alloc] initWithTitle:@"ReBoom" message:message delegate:delegate cancelButtonTitle:buttonText otherButtonTitles:nil];
-	alertView.cancelButtonIndex = 0;
 	[alertView show];
 }
 
@@ -78,25 +77,16 @@ void loadMovie(NSString *name) {
 			NSArray *commands = [sides[1] componentsSeparatedByString:@" "];
 			for (int ii = 0; ii < [commands count]; ii++) {
 				if ([commands[ii] length] > 1) {
-					if ([commands[ii] isEqual:@"rd"]) {
-						[strBuffer appendString:@"r"];
-					} else if ([commands[ii] isEqual:@"ru"]) {
-						[strBuffer appendString:@"R"];
-					} else if ([commands[ii] isEqual:@"ld"]) {
-						[strBuffer appendString:@"l"];
-					} else if ([commands[ii] isEqual:@"lu"]) {
-						[strBuffer appendString:@"L"];
-					} else if ([commands[ii] isEqual:@"***"]) {
-						[strBuffer appendString:@"*"];
-					} else if ([commands[ii] isEqual:@"log"]) {
-						[strBuffer appendString:@"p"];
-					}
+					if ([commands[ii] isEqual:@"rd"]) [strBuffer appendString:@"r"];
+					else if ([commands[ii] isEqual:@"ru"]) [strBuffer appendString:@"R"];
+					else if ([commands[ii] isEqual:@"ld"]) [strBuffer appendString:@"l"];
+					else if ([commands[ii] isEqual:@"lu"]) [strBuffer appendString:@"L"];
+					else if ([commands[ii] isEqual:@"***"]) [strBuffer appendString:@"*"];
+					else if ([commands[ii] isEqual:@"log"]) [strBuffer appendString:@"p"];
 				}
 			}
 
-			for (int ii = tas.length; ii < frame - 1; ii++) {
-				[tas.commands addObject:strEmpty];
-			}
+			for (int ii = tas.length; ii < frame - 1; ii++) [tas.commands addObject:strEmpty];
 
 			[tas.commands addObject:[NSString stringWithString:strBuffer]];
 			tas.length = frame;
@@ -112,6 +102,8 @@ void saveRecording(NSString *name) {
 	[recording writeToURL:path atomically:NO encoding:NSASCIIStringEncoding error:NULL];
 
 	if (LOGS_ENABLED) NSLog(@"Saved to %@!", path);
+
+	showAlert(@"TAS recording has been saved!", @"Dismiss");
 }
 
 // Pause Bug
@@ -185,11 +177,8 @@ void saveRecording(NSString *name) {
 
 	// record mode
 	if (GetPrefBool(@"RecordMode")) {
-		if (recording == NULL) {
-			recording = [[NSMutableString alloc] init];
-		} else {
-			[recording setString:@""];
-		}
+		if (recording == NULL) recording = [[NSMutableString alloc] init];
+		else [recording setString:@""];
 	}
 
 	frameID = 0;
@@ -200,7 +189,7 @@ void saveRecording(NSString *name) {
 	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 
 	if (GetPrefBool(@"TASMode") && ![self isChallenge] && ![self isTournament]) {
-		if (tas.length > 0 && frameID < tas.length /*&& leftButton != NULL && rightButton != NULL*/ && [tas.commands[frameID] length] > 0) {
+		if (tas.length > 0 && frameID < tas.length && [tas.commands[frameID] length] > 0) {
 			const NSString *list = tas.commands[frameID];
 			
 			for (int i = 0; i < [list length]; i++) {
@@ -240,9 +229,10 @@ void saveRecording(NSString *name) {
 	if (LOGS_ENABLED) NSLog(@"[TrialSession goal] called");
 	if (GetPrefBool(@"RecordMode") && recording != NULL && ![recording isEqual:@""]) {
 		if (LOGS_ENABLED) NSLog(@"[TrialSession goal] saving...");
-		saveRecording([[NSString alloc] initWithFormat:@"%@", [self levelId]]);
 		
-		showAlert(@"Saved recording", @"Dismiss");
+		HSAlertView *delegate = [[%c(HSAlertView) alloc] init]; 
+		HSAlertView *alertView = [[%c(HSAlertView) alloc] initWithTitle:@"ReBoom" message:@"Would you like to save the TAS recording?" delegate:delegate cancelButtonTitle:@"No" otherButtonTitles:@"Yes", nil];
+		[alertView show];
 	}
 
 	%orig;
@@ -478,6 +468,15 @@ SettingsItem *recordItem;
 
 /* INFO ALERT */
 
+%hook HSAlertView
+-(void)alertView:(HSAlertView *)view clickedButtonAtIndex:(int)index {
+	%orig;
+	if ([view.title isEqualToString:@"ReBoom"] && index == 1) {
+		saveRecording([[NSString alloc] initWithFormat:@"%@", [[%c(TrialSession) currentSession] levelId]]);
+	}
+}
+%end
+
 // When the game loads
 %hook AppController
 -(BOOL)application:(id)arg1 didFinishLaunchingWithOptions:(id)arg2 {
@@ -485,14 +484,9 @@ SettingsItem *recordItem;
 	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1.5 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
 		if (!GetPrefBool(@"HasShownAlert")) {
 			SetPrefBool(@"HasShownAlert", YES);
-			// showAlert(@"To record a TAS: Start a level then click restart.\n\nTo replay a TAS: Start a level, move left & right, then click restart.\n\nYou can toggle the options within the game's settings menu.\n\n(This will not be shown again)", @"Got it!");
 			showAlert(@"Welcome to ReBoom. All options can be changed from within the game's settings menu.\n\n(This will not be shown again)", @"Got it!");
 		}
 	});
 	return %orig;
 }
 %end
-
-
-
-// make recording alert have confirm button	
