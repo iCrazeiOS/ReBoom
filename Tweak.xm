@@ -9,7 +9,7 @@ void showAlert(NSString *message, NSString *buttonText) {
 }
 
 // Get pref value
-inline bool GetPrefBool(NSString *key) {
+inline BOOL GetPrefBool(NSString *key) {
 	NSString *path = [NSString stringWithFormat:@"%@/!prefs.plist", [[[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] firstObject] path]];
 
 	// Create file if it doesn't exist
@@ -175,12 +175,12 @@ void saveRecording(NSString *name) {
 	if (LOGS_ENABLED) NSLog(@"[ReBoom] [TrialSession start_reboom] called");
 
 	// unlock next level
-	if (GetPrefBool(@"EverythingUnlocked")) [handler SEL(unLockNextLevel)];
+	if (GetPrefBool(@"EverythingUnlocked")) [[%c(LevelHandler) sharedInstance] unLockNextLevel];
 
 	// replay mode
-	if (GetPrefBool(@"TASMode") && ![self SEL(isChallenge)] && ![self SEL(isTournament)]) {
+	if (GetPrefBool(@"TASMode") && ![self isChallenge] && ![self isTournament]) {
 		if (LOGS_ENABLED) NSLog(@"[ReBoom] [TrialSession restartLevel] loading TAS recording...");
-		loadMovie([self SEL(levelId)]);
+		loadMovie([self levelId]);
 	}
 
 	// record mode
@@ -199,7 +199,7 @@ void saveRecording(NSString *name) {
 -(void)update:(float)a {
 	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 
-	if (GetPrefBool(@"TASMode") && ![self SEL(isChallenge)] && ![self SEL(isTournament)]) {
+	if (GetPrefBool(@"TASMode") && ![self isChallenge] && ![self isTournament]) {
 		if (tas.length > 0 && frameID < tas.length /*&& leftButton != NULL && rightButton != NULL*/ && [tas.commands[frameID] length] > 0) {
 			const NSString *list = tas.commands[frameID];
 			
@@ -218,12 +218,12 @@ void saveRecording(NSString *name) {
 						[self stopLeft];
 						break;
 					case '*':
-						[self SEL(pause)];
+						[self pause];
 						break;
 					case 'p':
-						const CGPoint pos = [((CALayer *)[self SEL(wheely)]) position];
+						const CGPoint pos = [((CALayer *)[self wheely]) position];
 						CGPoint vel;
-						MSG0S(CGPoint*, &vel, [self SEL(wheely)], Object88);
+						MSG0S(CGPoint*, &vel, [self wheely], Object88);
 
 						if (LOGS_ENABLED) NSLog(@"\n[%04lu]\nPosition\n\tX: %f\n\tY: %f\nVelocity\n\tM: %f\n\tX: %f\n\tY: %f", frameID + 1, pos.x, pos.y, sqrtf(powf(vel.x, 2) + powf(vel.y, 2)), vel.x, vel.y);
 						break;
@@ -240,7 +240,7 @@ void saveRecording(NSString *name) {
 	if (LOGS_ENABLED) NSLog(@"[TrialSession goal] called");
 	if (GetPrefBool(@"RecordMode") && recording != NULL && ![recording isEqual:@""]) {
 		if (LOGS_ENABLED) NSLog(@"[TrialSession goal] saving...");
-		saveRecording([[NSString alloc] initWithFormat:@"%@", [self SEL(levelId)]]);
+		saveRecording([[NSString alloc] initWithFormat:@"%@", [self levelId]]);
 		
 		showAlert(@"Saved recording", @"Dismiss");
 	}
@@ -340,13 +340,6 @@ void saveRecording(NSString *name) {
 %hook Player
 -(BOOL)hasItem:(id)item id:(id)b {
 	return GetPrefBool(@"EverythingUnlocked") ? YES : %orig;
-}
-%end
-%hook LevelHandler
--(id)init {
-	id result = %orig;
-	handler = result;
-	return result;
 }
 %end
 
@@ -487,7 +480,7 @@ SettingsItem *recordItem;
 
 // When the game loads
 %hook AppController
--(bool)application:(id)arg1 didFinishLaunchingWithOptions:(id)arg2 {
+-(BOOL)application:(id)arg1 didFinishLaunchingWithOptions:(id)arg2 {
 	// Wait 1.5 seconds
 	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1.5 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
 		if (!GetPrefBool(@"HasShownAlert")) {

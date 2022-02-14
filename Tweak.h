@@ -6,8 +6,6 @@ BOOL LOGS_ENABLED = NO;
 #define TAS_EXT @".btas"
 #define FIXED_DELTA (1.0f / 60.0f)
 
-#define SEL(x) performSelector:@selector(x)
-
 // #define MSG0S(rt,r,x,y) ((void(*)(rt, id, SEL))objc_msgSend_stret)(r, x, @selector(y))    // armv7
 #define MSG0S(rt,r,x,y) ((void(*)(rt, id, SEL))objc_msgSend)(r, x, @selector(y))	// arm64(e)
 
@@ -17,6 +15,11 @@ BOOL LOGS_ENABLED = NO;
 -(void)stopRight;
 -(void)stopLeft;
 -(void)start_reboom;
+-(BOOL)isChallenge;
+-(BOOL)isTournament;
+-(void)pause;
+-(id)wheely;
+-(NSString *)levelId;
 @end
 
 @interface SettingsItem : UITableViewCell
@@ -27,25 +30,20 @@ BOOL LOGS_ENABLED = NO;
 -(void)unselected;
 @end
 
-/* TAS STRUCT START */
+@interface LevelHandler : NSObject
++(id)sharedInstance;
+-(void)unLockNextLevel;
+@end
+
+
+
+/* TAS Stuff */
 
 struct Movie {
 	int length;
 	NSMutableArray* commands;
 };
 
-/* TAS STRUCT END */
-
-
-
-/* VARIABLES START */
-
-// Used for unlocks
-id handler;
-
-// TAS global variables
 Movie tas;
 NSMutableString* recording;
 unsigned long frameID, lastFrameID = 0;
-
-/* VARIABLES END */
