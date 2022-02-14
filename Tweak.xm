@@ -156,20 +156,23 @@ void saveRecording(NSString *name) {
 }
 %end
 
-
-// these help reduce errors/crashes
-BOOL clickedLeft = NO;
-BOOL clickedRight = NO;
-BOOL running = NO;
-
+// TAS & Unlocks
 %hook TrialSession
 -(void)restartLevel {
 	%orig;
+	if (LOGS_ENABLED) NSLog(@"[ReBoom] Restarting level...");
+	[self start_reboom];
+}
 
-	running = NO;
-	// progress = 1;
+-(void)onEnter {
+	%orig;
+	if (LOGS_ENABLED) NSLog(@"[ReBoom] Starting level...");
+	[self start_reboom];
+}
 
-	// NSLog(@"[ReBoom] Restarting level...");
+%new
+-(void)start_reboom {
+	if (LOGS_ENABLED) NSLog(@"[ReBoom] [TrialSession start_reboom] called");
 
 	// unlock next level
 	if (GetPrefBool(@"EverythingUnlocked")) [handler SEL(unLockNextLevel)];
@@ -197,30 +200,22 @@ BOOL running = NO;
 	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 
 	if (GetPrefBool(@"TASMode") && ![self SEL(isChallenge)] && ![self SEL(isTournament)]) {
-		if (tas.length > 0 && frameID < tas.length && leftButton != NULL && rightButton != NULL && [tas.commands[frameID] length] > 0) {
+		if (tas.length > 0 && frameID < tas.length /*&& leftButton != NULL && rightButton != NULL*/ && [tas.commands[frameID] length] > 0) {
 			const NSString *list = tas.commands[frameID];
-
-			if (clickedLeft && clickedRight) {
-				clickedLeft = NO;
-				clickedRight = NO;
-				[self restartLevel];
-			}
-
-			running = YES;
 			
 			for (int i = 0; i < [list length]; i++) {
 				switch([list characterAtIndex:i]) {
 					case 'r':
-						[rightButton SEL(selected)];
+						[self right];
 						break;
 					case 'R':
-						[rightButton SEL(unselected)];
+						[self stopRight];
 						break;
 					case 'l':
-						[leftButton SEL(selected)];
+						[self left];
 						break;
 					case 'L':
-						[leftButton SEL(unselected)];
+						[self stopLeft];
 						break;
 					case '*':
 						[self SEL(pause)];
@@ -228,7 +223,7 @@ BOOL running = NO;
 					case 'p':
 						const CGPoint pos = [((CALayer *)[self SEL(wheely)]) position];
 						CGPoint vel;
-						MSG0S(CGPoint*, &vel, [self SEL(wheely)], Object88); // getVelocity
+						MSG0S(CGPoint*, &vel, [self SEL(wheely)], Object88);
 
 						if (LOGS_ENABLED) NSLog(@"\n[%04lu]\nPosition\n\tX: %f\n\tY: %f\nVelocity\n\tM: %f\n\tX: %f\n\tY: %f", frameID + 1, pos.x, pos.y, sqrtf(powf(vel.x, 2) + powf(vel.y, 2)), vel.x, vel.y);
 						break;
@@ -252,80 +247,65 @@ BOOL running = NO;
 
 	%orig;
 }
-%end
 
-// Find buttons and record inputs
-%hook HSMenuItem
--(void)selected {
-	if (LOGS_ENABLED) NSLog(@"[HSMenuItem selected] called");
-	if (GetPrefBool(@"RecordMode") && recording != NULL) {
-		if (self == leftButton) {
-			if (!running) clickedLeft = YES;
-			if (LOGS_ENABLED) NSLog(@"[HSMenuItem selected] leftButton called");
-			if (lastFrameID < frameID + 1) {
-				if (LOGS_ENABLED) NSLog(@"[HSMenuItem selected] leftButton appending");
-				[recording appendFormat:frameID == 0 ? @"%04lu :" : @"\n%04lu :", frameID + 1];
-				lastFrameID = frameID + 1;
-			}
-
-			[recording appendString:@" ld"];
-		} else if (self == rightButton) {
-			if (!running) clickedRight = YES;
-			if (LOGS_ENABLED) NSLog(@"[HSMenuItem selected] rightButton called");
-			if (lastFrameID < frameID + 1) {
-				if (LOGS_ENABLED) NSLog(@"[HSMenuItem selected] rightButton appending");
-				[recording appendFormat:frameID == 0 ? @"%04lu :" : @"\n%04lu :", frameID + 1];
-				lastFrameID = frameID + 1;
-			}
-
-			[recording appendString:@" rd"];
-		}
-	} else if (LOGS_ENABLED) NSLog(@"[HSMenuItem selected] not recording. RecordMode: %@", GetPrefBool(@"RecordMode") ? @"YES" : @"NO");
-
+// when player taps right
+-(void)right {
 	%orig;
+	if (GetPrefBool(@"RecordMode") && recording != NULL) {
+		if (LOGS_ENABLED) NSLog(@"[TrialSession right] called with record mode on");
+		if (lastFrameID < frameID + 1) {
+			if (LOGS_ENABLED) NSLog(@"[TrialSession right] appending");
+			[recording appendFormat:frameID == 0 ? @"%04lu :" : @"\n%04lu :", frameID + 1];
+			lastFrameID = frameID + 1;
+		}
+
+		[recording appendString:@" rd"];
+	}
 }
 
--(void)unselected {
-	if (LOGS_ENABLED) NSLog(@"[HSMenuItem unselected] called");
+// when player taps left
+-(void)left {
+	%orig;
 	if (GetPrefBool(@"RecordMode") && recording != NULL) {
-		if (self == leftButton) {
-			if (LOGS_ENABLED) NSLog(@"[HSMenuItem unselected] leftButton called");
-			if (lastFrameID < frameID + 1) {
-				if (LOGS_ENABLED) NSLog(@"[HSMenuItem unselected] leftButton appending");
-				[recording appendFormat:frameID == 0 ? @"%04lu :" : @"\n%04lu :", frameID + 1];
-				lastFrameID = frameID + 1;
-			}
+		if (LOGS_ENABLED) NSLog(@"[TrialSession left] called with record mode on");
+		if (lastFrameID < frameID + 1) {
+			if (LOGS_ENABLED) NSLog(@"[TrialSession left] appending");
+			[recording appendFormat:frameID == 0 ? @"%04lu :" : @"\n%04lu :", frameID + 1];
+			lastFrameID = frameID + 1;
+		}
 
-			[recording appendString:@" lu"];
-		} else if (self == rightButton) {
-			if (LOGS_ENABLED) NSLog(@"[HSMenuItem unselected] rightButton called");
+		[recording appendString:@" ld"];
+	}
+}
+
+// when player releases right
+-(void)stopRight {
+	%orig;
+	if (GetPrefBool(@"RecordMode") && recording != NULL) {
+		if (LOGS_ENABLED) NSLog(@"[TrialSession stopRight] called with record mode on");
 			if (lastFrameID < frameID + 1) {
-				if (LOGS_ENABLED) NSLog(@"[HSMenuItem unselected] rightButton appending");
+				if (LOGS_ENABLED) NSLog(@"[TrialSession stopRight] appending");
 				[recording appendFormat:frameID == 0 ? @"%04lu :" : @"\n%04lu :", frameID + 1];
 				lastFrameID = frameID + 1;
 			}
 
 			[recording appendString:@" ru"];
-		}
 	}
-
-	%orig;
 }
 
--(struct CGRect)rect {
-	CGRect rec = %orig;
+// when player releases left
+-(void)stopLeft {
+	%orig;
+	if (GetPrefBool(@"RecordMode") && recording != NULL) {
+		if (LOGS_ENABLED) NSLog(@"[TrialSession stopLeft] called with record mode on");
+			if (lastFrameID < frameID + 1) {
+				if (LOGS_ENABLED) NSLog(@"[TrialSession stopLeft] appending");
+				[recording appendFormat:frameID == 0 ? @"%04lu :" : @"\n%04lu :", frameID + 1];
+				lastFrameID = frameID + 1;
+			}
 
-	if (LOGS_ENABLED) NSLog(@"[HSMenuItem rect] called - looking for buttons");
-
-	if (rec.size.width == 200.0f && rec.size.height == 150.0f) {
-		rightButton = self;
-		if (LOGS_ENABLED) NSLog(@"[TrialSession rect] found right button: %@", rightButton);
-	} else if (rec.size.width == 400.0f && rec.size.height == 150.0f) {
-		leftButton = self;
-		if (LOGS_ENABLED) NSLog(@"[TrialSession rect] found left button: %@", leftButton);
+			[recording appendString:@" lu"];
 	}
-
-	return rec;
 }
 %end
 
@@ -512,9 +492,14 @@ SettingsItem *recordItem;
 	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1.5 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
 		if (!GetPrefBool(@"HasShownAlert")) {
 			SetPrefBool(@"HasShownAlert", YES);
-			showAlert(@"To record a TAS: Start a level then click restart.\n\nTo replay a TAS: Start a level, move left & right, then click restart.\n\nYou can toggle the options within the game's settings menu.\n\n(This will not be shown again)", @"Got it!");
+			// showAlert(@"To record a TAS: Start a level then click restart.\n\nTo replay a TAS: Start a level, move left & right, then click restart.\n\nYou can toggle the options within the game's settings menu.\n\n(This will not be shown again)", @"Got it!");
+			showAlert(@"Welcome to ReBoom. All options can be changed from within the game's settings menu.\n\n(This will not be shown again)", @"Got it!");
 		}
 	});
 	return %orig;
 }
 %end
+
+
+
+// make recording alert have confirm button	

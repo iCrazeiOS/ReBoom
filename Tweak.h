@@ -12,7 +12,11 @@ BOOL LOGS_ENABLED = NO;
 #define MSG0S(rt,r,x,y) ((void(*)(rt, id, SEL))objc_msgSend)(r, x, @selector(y))	// arm64(e)
 
 @interface TrialSession : NSObject
--(void)restartLevel;
+-(void)right;
+-(void)left;
+-(void)stopRight;
+-(void)stopLeft;
+-(void)start_reboom;
 @end
 
 @interface SettingsItem : UITableViewCell
@@ -27,27 +31,21 @@ BOOL LOGS_ENABLED = NO;
 
 struct Movie {
 	int length;
-
-	// each entry (frame) in the array is a NSString of command characters:
-	// - left down: l
-	// - left up: L
-	// - right down: r
-	// - right up: R
-	// -- example: @"rRrRrRrl"
 	NSMutableArray* commands;
 };
 
 /* TAS STRUCT END */
 
+
+
 /* VARIABLES START */
 
-// everything unlocked variable
+// Used for unlocks
 id handler;
 
 // TAS global variables
 Movie tas;
 NSMutableString* recording;
-id leftButton, rightButton;
 unsigned long frameID, lastFrameID = 0;
 
 /* VARIABLES END */
