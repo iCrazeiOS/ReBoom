@@ -302,19 +302,19 @@ void saveRecording(NSString *name) {
 // Encryption
 %hook HSAppSecurity
 +(id)AES256Encrypt:(id)toEncrypt withKey:(id)key salt:(id)salt {
-	if (GetPrefBool(@"LogRequest")) if (LOGS_ENABLED) NSLog(@"%@", [[NSString alloc] initWithData:toEncrypt encoding:NSUTF8StringEncoding]);
+	if (GetPrefBool(@"LogRequest")) NSLog(@"%@", [[NSString alloc] initWithData:toEncrypt encoding:NSUTF8StringEncoding]);
 	return GetPrefBool(@"DisableEncryption") ? toEncrypt : %orig;
 }
 +(id)AES256Decrypt:(id)toDecrypt withKey:(id)key salt:(id)salt {
 	id result = %orig;
-	if (GetPrefBool(@"LogResponse")) if (LOGS_ENABLED) NSLog(@"Decrypted with key %@ and salt %@:\n%@", key, salt, [[NSString alloc] initWithData:result encoding:NSUTF8StringEncoding]);
+	if (GetPrefBool(@"LogResponse")) NSLog(@"Decrypted with key %@ and salt %@:\n%@", key, salt, [[NSString alloc] initWithData:result encoding:NSUTF8StringEncoding]);
 	return result;
 }
 %end
 
 %hook HSRequestSecurity
 +(id)request:(id)a path:(id)path parameters:(id)params secureString:(id)d post:(BOOL)e secretKey:(id)f result:(id)g progress:(id)h timeout:(id)i packetSize:(id)j packetDelay:(double)k {
-	if (GetPrefBool(@"LogRequest")) if (LOGS_ENABLED) NSLog(@"Sent request to %@...", path);
+	if (GetPrefBool(@"LogRequest")) NSLog(@"Sent request to %@...", path);
 	return %orig;
 }
 %end
