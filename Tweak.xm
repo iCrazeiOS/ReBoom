@@ -505,8 +505,9 @@ SettingsItem *recordItem;
 
 /* INFO ALERT */
 
-// When the dylib is injected
-%ctor {
+// When the game loads
+%hook AppController
+-(bool)application:(id)arg1 didFinishLaunchingWithOptions:(id)arg2 {
 	// Wait 1.5 seconds
 	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1.5 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
 		if (!GetPrefBool(@"HasShownAlert")) {
@@ -514,4 +515,6 @@ SettingsItem *recordItem;
 			showAlert(@"To record a TAS: Start a level then click restart.\n\nTo replay a TAS: Start a level, move left & right, then click restart.\n\nYou can toggle the options within the game's settings menu.\n\n(This will not be shown again)", @"Got it!");
 		}
 	});
+	return %orig;
 }
+%end
