@@ -30,6 +30,18 @@
 			<key>defaults</key>
 			<string>com.dtu.reboomprefs</string>
 			<key>key</key>
+			<string>ZeroGrav</string>
+			<key>label</key>
+			<string>Zero Grav</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<false/>
+			<key>defaults</key>
+			<string>com.dtu.reboomprefs</string>
+			<key>key</key>
 			<string>EverythingUnlocked</string>
 			<key>label</key>
 			<string>Everything unlocked</string>
@@ -38,7 +50,7 @@
 			<key>cell</key>
 			<string>PSSwitchCell</string>
 			<key>default</key>
-			<false/>
+			<true/>
 			<key>defaults</key>
 			<string>com.dtu.reboomprefs</string>
 			<key>key</key>
@@ -98,13 +110,13 @@
 			<key>cell</key>
 			<string>PSSwitchCell</string>
 			<key>default</key>
-			<false/>
+			<true/>
 			<key>defaults</key>
 			<string>com.dtu.reboomprefs</string>
 			<key>key</key>
 			<string>DisableChecksum</string>
 			<key>label</key>
-			<string>Disable level checksums</string>
+			<string>Disable File Checksum</string>
 		</dict>
 		<dict>
 			<key>cell</key>

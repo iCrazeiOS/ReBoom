@@ -1,4 +1,5 @@
 #import "Tweak.h"
+#import "App-Headers/B2World.h"
 
 // Show the game's custom alert view
 void showAlert(NSString *message, NSString *buttonText) {
@@ -113,6 +114,14 @@ void saveRecording(NSString *name) {
 }
 -(void)resumeSchedulerAndActionsRecursive:(id)a {
 	if (!GetPrefBool(@"PauseBug")) %orig; 
+}
+%end
+
+//Zero Gravity
+%hook LevelHelperLoader
+//-(void)createGravity:(b2World*)gravity;
+-(void)createGravity:(b2World*)gravity{
+	if(!GetPrefBool(@"ZeroGrav")) %orig; 
 }
 %end
 
@@ -356,7 +365,7 @@ SettingsItem *recordItem;
 -(int)tableView:(id)view numberOfRowsInSection:(int)section {
 	// Tell the game how many rows we have in our custom sections
 	int ret = %orig;
-	if (section == 1) ret = 3;
+	if (section == 1) ret = 4;
 	else if (section == 2) ret = 3;
 	else if (section == 3) ret = 4;
 	return ret;
@@ -373,11 +382,16 @@ SettingsItem *recordItem;
 					pauseItem.ReBoom_PrefValue = @"PauseBug";
 					return pauseItem;
 				case 1:
+					SettingsItem *gravityItem;
+					gravityItem = [%c(SettingsItem) itemWithTitle:@"Zero Gravity" value:(GetPrefBool(@"ZeroGrav") ? @"Enabled" : @"Disabled") type:1];
+					gravityItem.ReBoom_PrefValue = @"ZeroGrav";
+					return gravityItem;
+				case 2:
 					SettingsItem *unlockItem;
 					unlockItem = [%c(SettingsItem) itemWithTitle:@"Everything Unlocked" value:(GetPrefBool(@"EverythingUnlocked") ? @"Enabled" : @"Disabled") type:1];
 					unlockItem.ReBoom_PrefValue = @"EverythingUnlocked";
 					return unlockItem;
-				case 2:
+				case 3:
 					SettingsItem *icloudItem;
 					icloudItem = [%c(SettingsItem) itemWithTitle:@"Disable iCloud" value:(GetPrefBool(@"DisableICloud") ? @"Enabled" : @"Disabled") type:1];
 					icloudItem.ReBoom_PrefValue = @"DisableICloud";
