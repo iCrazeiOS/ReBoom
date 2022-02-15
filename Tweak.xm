@@ -20,7 +20,7 @@ inline BOOL GetPrefBool(NSString *key) {
 	// Load prefs from file
 	NSMutableDictionary *prefsDict = [NSMutableDictionary dictionary];
 	[prefsDict addEntriesFromDictionary:[NSDictionary dictionaryWithContentsOfFile:path]];
-
+	//we should set icloudItem to true by default
 	// If key doesn't exist, set it to false ("disabled")
 	if (![[prefsDict allKeys] containsObject:key]) {
 		[prefsDict setValue:@(NO) forKey:key];
@@ -209,19 +209,25 @@ void saveRecording(NSString *name) {
 			if(autoRight){
 
 				if(autoRelease) {
+					[self stopLeft];
 					[self stopRight];
+					//NSLog(@"[self stopRight] stopRight called");
 				}
 				else {
 					[self right];
+					//NSLog(@"[self right] right called");
 				}
 			}
 			else if(autoLeft){
 
 				if(autoRelease){
+					[self stopRight];
 					[self stopLeft];
+					//NSLog(@"[self stopLeft] stopLeft called");
 				}
 				else{
 					[self left];
+					//NSLog(@"[self left] left called");
 				}
 			}
 			autoRelease = !autoRelease;
