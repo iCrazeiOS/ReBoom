@@ -84,6 +84,18 @@
 			<key>defaults</key>
 			<string>com.dtu.reboomprefs</string>
 			<key>key</key>
+			<string>AutoTAS</string>
+			<key>label</key>
+			<string>Auto TAS</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<false/>
+			<key>defaults</key>
+			<string>com.dtu.reboomprefs</string>
+			<key>key</key>
 			<string>RecordMode</string>
 			<key>label</key>
 			<string>Recording mode</string>

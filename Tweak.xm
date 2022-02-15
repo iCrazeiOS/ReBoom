@@ -192,10 +192,41 @@ void saveRecording(NSString *name) {
 
 	frameID = 0;
 	lastFrameID = 0;
+	autoLeft = false;
+	autoRight = false;
+	autoRelease = false;
 }
 
 -(void)update:(float)a {
 	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
+
+	// Spam taps in the direction of the last button you pressed
+	if (GetPrefBool(@"AutoTAS") && ![self isChallenge] && ![self isTournament]){
+// 		if([LevelHelperLoader isPaused]){
+// 			autoLeft, autoRight, autoRelease = false;
+// 		}
+// 		else {
+			if(autoRight){
+
+				if(autoRelease) {
+					[self stopRight];
+				}
+				else {
+					[self right];
+				}
+			}
+			else if(autoLeft){
+
+				if(autoRelease){
+					[self stopLeft];
+				}
+				else{
+					[self left];
+				}
+			}
+			autoRelease = !autoRelease;
+// 		}
+	}
 
 	if (GetPrefBool(@"TASMode") && ![self isChallenge] && ![self isTournament]) {
 		if (tas.length > 0 && frameID < tas.length && [tas.commands[frameID] length] > 0) {
@@ -249,6 +280,7 @@ void saveRecording(NSString *name) {
 
 // when player taps right
 -(void)right {
+	autoLeft = false;
 	%orig;
 	if (GetPrefBool(@"RecordMode") && recording != NULL) {
 		if (LOGS_ENABLED) NSLog(@"[TrialSession right] called with record mode on");
@@ -264,6 +296,7 @@ void saveRecording(NSString *name) {
 
 // when player taps left
 -(void)left {
+	autoRight = false;
 	%orig;
 	if (GetPrefBool(@"RecordMode") && recording != NULL) {
 		if (LOGS_ENABLED) NSLog(@"[TrialSession left] called with record mode on");
@@ -279,6 +312,9 @@ void saveRecording(NSString *name) {
 
 // when player releases right
 -(void)stopRight {
+	autoRight = true;
+	autoLeft = false;
+// 	autoRelease = false;
 	%orig;
 	if (GetPrefBool(@"RecordMode") && recording != NULL) {
 		if (LOGS_ENABLED) NSLog(@"[TrialSession stopRight] called with record mode on");
@@ -294,6 +330,9 @@ void saveRecording(NSString *name) {
 
 // when player releases left
 -(void)stopLeft {
+	autoLeft = true;
+	autoRight = false;
+// 	autoRelease = false;
 	%orig;
 	if (GetPrefBool(@"RecordMode") && recording != NULL) {
 		if (LOGS_ENABLED) NSLog(@"[TrialSession stopLeft] called with record mode on");
@@ -366,7 +405,7 @@ SettingsItem *recordItem;
 	// Tell the game how many rows we have in our custom sections
 	int ret = %orig;
 	if (section == 1) ret = 4;
-	else if (section == 2) ret = 3;
+	else if (section == 2) ret = 4;
 	else if (section == 3) ret = 4;
 	return ret;
 }
@@ -406,10 +445,15 @@ SettingsItem *recordItem;
 					replayItem.ReBoom_PrefValue = @"TASMode";
 					return replayItem;
 				case 1:
+					SettingsItem *autoItem;
+					autoItem = [%c(SettingsItem) itemWithTitle:@"Auto Tas" value:(GetPrefBool(@"AutoTAS") ? @"Enabled" : @"Disabled") type:1];
+					autoItem.ReBoom_PrefValue = @"AutoTAS";
+					return autoItem;
+				case 2:
 					recordItem = [%c(SettingsItem) itemWithTitle:@"Record Mode" value:(GetPrefBool(@"RecordMode") ? @"Enabled" : @"Disabled") type:1];
 					recordItem.ReBoom_PrefValue = @"RecordMode";
 					return recordItem;
-				case 2:
+				case 3:
 					SettingsItem *deltaItem;
 					deltaItem = [%c(SettingsItem) itemWithTitle:@"Fixed Delta Time" value:(GetPrefBool(@"FixedDelta") ? @"Enabled" : @"Disabled") type:1];
 					deltaItem.ReBoom_PrefValue = @"FixedDelta";

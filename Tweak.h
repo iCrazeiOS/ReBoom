@@ -44,7 +44,7 @@ struct Movie {
 	int length;
 	NSMutableArray* commands;
 };
-
+bool autoLeft, autoRight, autoRelease = false;
 Movie tas;
 NSMutableString* recording;
 unsigned long frameID, lastFrameID = 0;
