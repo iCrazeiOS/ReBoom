@@ -170,6 +170,8 @@ void saveRecording(NSString *name) {
 }
 
 -(void)onEnter {
+	autoLeft = false;
+	autoRight = false;
 	%orig;
 	if (LOGS_ENABLED) NSLog(@"[ReBoom] Starting level...");
 	[self start_reboom];
@@ -212,9 +214,6 @@ void saveRecording(NSString *name) {
 // 		}
 // 		else {
 		if(!autoSelected){
-// 			autoExit = 0;
-// 		}
-// 		else {
 			if(autoRight){
 
 				if(autoRelease) {
@@ -239,6 +238,15 @@ void saveRecording(NSString *name) {
 				}			
 			}
 			autoRelease = !autoRelease;
+		}
+		else if(autoRelease){
+			if(!autoRight){
+				[self stopRight];
+			}
+			else if(!autoLeft){
+				[self stopLeft];
+			}
+		
 		}
 	}
 
