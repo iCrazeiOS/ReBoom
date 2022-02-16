@@ -162,6 +162,8 @@ void saveRecording(NSString *name) {
 -(void)restartLevel {
 	[self stopLeft];
 	[self stopRight];
+	autoLeft = false;
+	autoRight = false;
 	%orig;
 	if (LOGS_ENABLED) NSLog(@"[ReBoom] Restarting level...");
 	[self start_reboom];
@@ -194,10 +196,10 @@ void saveRecording(NSString *name) {
 
 	frameID = 0;
 	lastFrameID = 0;
-	autoLeft = false;
-	autoRight = false;
-	//autoRelease = true;
-	//autoSelected = true;
+// 	autoLeft = false;
+// 	autoRight = false;
+// 	autoRelease = true;
+// 	autoSelected = true;
 }
 
 -(void)update:(float)a {
