@@ -1,1 +1,1 @@
-{ Filter = { Bundles = ( "eu.markstam.boomclone" ); }; }
+{ Filter = { Bundles = ( "eu.markstam.boomclone", "com.happysprites.boom.T8ALTGMVXN" ); }; }

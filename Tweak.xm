@@ -194,7 +194,7 @@ void saveRecording(NSString *name) {
 	lastFrameID = 0;
 	autoLeft = false;
 	autoRight = false;
-	autoRelease = false;
+	autoRelease = true;
 }
 
 -(void)update:(float)a {
@@ -206,6 +206,10 @@ void saveRecording(NSString *name) {
 // 			autoLeft, autoRight, autoRelease = false;
 // 		}
 // 		else {
+		if(!autoSelected){
+// 			autoExit = 0;
+// 		}
+// 		else {
 			if(autoRight){
 
 				if(autoRelease) {
@@ -215,8 +219,8 @@ void saveRecording(NSString *name) {
 				}
 				else {
 					[self right];
-					//NSLog(@"[self right] right called");
 				}
+	
 			}
 			else if(autoLeft){
 
@@ -225,13 +229,12 @@ void saveRecording(NSString *name) {
 					[self stopLeft];
 					//NSLog(@"[self stopLeft] stopLeft called");
 				}
-				else{
+				else {
 					[self left];
-					//NSLog(@"[self left] left called");
-				}
+				}			
 			}
 			autoRelease = !autoRelease;
-// 		}
+		}
 	}
 
 	if (GetPrefBool(@"TASMode") && ![self isChallenge] && ![self isTournament]) {
@@ -350,6 +353,21 @@ void saveRecording(NSString *name) {
 
 			[recording appendString:@" lu"];
 	}
+}
+%end
+
+//Finding if any button is selected
+%hook HSMenuItem
+- (void)selected {
+	//NSLog(@"autoSelect set true");
+	autoSelected = true;
+	%orig;
+}
+- (void)unselected {
+//	if(GetPrefBool(@"AutoTas")){
+		autoSelected = false;
+//	}
+	%orig;
 }
 %end
 
