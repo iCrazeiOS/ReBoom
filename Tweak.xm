@@ -160,6 +160,8 @@ void saveRecording(NSString *name) {
 // TAS & Unlocks
 %hook TrialSession
 -(void)restartLevel {
+	[self stopLeft];
+	[self stopRight];
 	%orig;
 	if (LOGS_ENABLED) NSLog(@"[ReBoom] Restarting level...");
 	[self start_reboom];
@@ -194,7 +196,8 @@ void saveRecording(NSString *name) {
 	lastFrameID = 0;
 	autoLeft = false;
 	autoRight = false;
-	autoRelease = true;
+	//autoRelease = true;
+	//autoSelected = true;
 }
 
 -(void)update:(float)a {
@@ -289,6 +292,7 @@ void saveRecording(NSString *name) {
 
 // when player taps right
 -(void)right {
+	autoRight = true;
 	autoLeft = false;
 	%orig;
 	if (GetPrefBool(@"RecordMode") && recording != NULL) {
@@ -306,6 +310,7 @@ void saveRecording(NSString *name) {
 // when player taps left
 -(void)left {
 	autoRight = false;
+	autoLeft = true;
 	%orig;
 	if (GetPrefBool(@"RecordMode") && recording != NULL) {
 		if (LOGS_ENABLED) NSLog(@"[TrialSession left] called with record mode on");
@@ -321,8 +326,8 @@ void saveRecording(NSString *name) {
 
 // when player releases right
 -(void)stopRight {
-	autoRight = true;
-	autoLeft = false;
+	//autoRight = true;
+	//autoLeft = false;
 // 	autoRelease = false;
 	%orig;
 	if (GetPrefBool(@"RecordMode") && recording != NULL) {
@@ -339,8 +344,8 @@ void saveRecording(NSString *name) {
 
 // when player releases left
 -(void)stopLeft {
-	autoLeft = true;
-	autoRight = false;
+	//autoLeft = true;
+	//autoRight = false;
 // 	autoRelease = false;
 	%orig;
 	if (GetPrefBool(@"RecordMode") && recording != NULL) {
