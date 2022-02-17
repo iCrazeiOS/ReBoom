@@ -1,5 +1,4 @@
 #import "Tweak.h"
-#import "App-Headers/B2World.h"
 
 // Show the game's custom alert view
 void showAlert(NSString *message, NSString *buttonText) {
@@ -20,10 +19,11 @@ inline BOOL GetPrefBool(NSString *key) {
 	// Load prefs from file
 	NSMutableDictionary *prefsDict = [NSMutableDictionary dictionary];
 	[prefsDict addEntriesFromDictionary:[NSDictionary dictionaryWithContentsOfFile:path]];
-	//we should set icloudItem to true by default
-	// If key doesn't exist, set it to false ("disabled")
+	// If key doesn't exist, set it to false ("Disabled")
 	if (![[prefsDict allKeys] containsObject:key]) {
-		[prefsDict setValue:@(NO) forKey:key];
+		id defaultValue = @(NO);
+		if ([@[@"DisableICloud", @"FixedDelta", @"DisableChecksum"] containsObject:key]) defaultValue = @(YES);
+		[prefsDict setValue:defaultValue forKey:key];
 		[prefsDict writeToFile:path atomically:YES];
 		return GetPrefBool(key);
 	}
@@ -31,9 +31,11 @@ inline BOOL GetPrefBool(NSString *key) {
 	// Get the value for the key
 	NSString *value = [prefsDict valueForKey:key];
 
-	// If there is no value, set it to false ("disabled")
+	// If there is no value, set it to false ("Disabled")
 	if (!value) {
-		[prefsDict setValue:@(NO) forKey:key];
+		id defaultValue = @(NO);
+		if ([@[@"DisableICloud", @"FixedDelta", @"DisableChecksum"] containsObject:key]) defaultValue = @(YES);
+		[prefsDict setValue:defaultValue forKey:key];
 		[prefsDict writeToFile:path atomically:YES];
 		return GetPrefBool(key);
 	}
@@ -107,24 +109,6 @@ void saveRecording(NSString *name) {
 	showAlert(@"TAS recording has been saved!", @"Dismiss");
 }
 
-// Pause Bug
-%hook TrialSession
--(void)pauseSchedulerAndActionsRecursive:(id)a {
-	if (!GetPrefBool(@"PauseBug")) %orig; 
-}
--(void)resumeSchedulerAndActionsRecursive:(id)a {
-	if (!GetPrefBool(@"PauseBug")) %orig; 
-}
-%end
-
-//Zero Gravity
-%hook LevelHelperLoader
-//-(void)createGravity:(b2World*)gravity;
--(void)createGravity:(b2World*)gravity{
-	if(!GetPrefBool(@"ZeroGrav")) %orig; 
-}
-%end
-
 // Fixed Delta & TAS
 %hook CCScheduler
 -(void)update:(float)a {
@@ -157,21 +141,38 @@ void saveRecording(NSString *name) {
 }
 %end
 
-// TAS & Unlocks
+// TAS, Unlocks, Pause Bug, Disable Tutorials
 %hook TrialSession
+-(void)showTutorial {
+	if (!GetPrefBool(@"DisableTutorials")) %orig;
+}
+
+-(void)pauseSchedulerAndActionsRecursive:(id)a {
+	if (!GetPrefBool(@"PauseBug")) %orig; 
+}
+-(void)resumeSchedulerAndActionsRecursive:(id)a {
+	if (!GetPrefBool(@"PauseBug")) %orig; 
+}
+
 -(void)restartLevel {
-	[self stopLeft];
-	[self stopRight];
-	autoLeft = false;
-	autoRight = false;
+	if (GetPrefBool(@"AutoTAS")) {
+		[self stopLeft];
+		[self stopRight];
+		autoLeft = false;
+		autoRight = false;
+	}
+
 	%orig;
 	if (LOGS_ENABLED) NSLog(@"[ReBoom] Restarting level...");
 	[self start_reboom];
 }
 
 -(void)onEnter {
-	autoLeft = false;
-	autoRight = false;
+	if (GetPrefBool(@"AutoTAS")) {
+		autoLeft = false;
+		autoRight = false;
+	}
+
 	%orig;
 	if (LOGS_ENABLED) NSLog(@"[ReBoom] Starting level...");
 	[self start_reboom];
@@ -198,10 +199,6 @@ void saveRecording(NSString *name) {
 
 	frameID = 0;
 	lastFrameID = 0;
-// 	autoLeft = false;
-// 	autoRight = false;
-// 	autoRelease = true;
-// 	autoSelected = true;
 }
 
 -(void)update:(float)a {
@@ -209,44 +206,22 @@ void saveRecording(NSString *name) {
 
 	// Spam taps in the direction of the last button you pressed
 	if (GetPrefBool(@"AutoTAS") && ![self isChallenge] && ![self isTournament]){
-// 		if([LevelHelperLoader isPaused]){
-// 			autoLeft, autoRight, autoRelease = false;
-// 		}
-// 		else {
-		if(!autoSelected){
-			if(autoRight){
-
-				if(autoRelease) {
+		if (!autoSelected) {
+			if (autoRight) {
+				if (autoRelease) {
 					[self stopLeft];
 					[self stopRight];
-					//NSLog(@"[self stopRight] stopRight called");
-				}
-				else {
-					[self right];
-				}
-	
-			}
-			else if(autoLeft){
-
-				if(autoRelease){
+				} else [self right];
+			} else if (autoLeft) {
+				if (autoRelease) {
 					[self stopRight];
 					[self stopLeft];
-					//NSLog(@"[self stopLeft] stopLeft called");
-				}
-				else {
-					[self left];
-				}			
+				} else [self left];
 			}
 			autoRelease = !autoRelease;
-		}
-		else if(autoRelease){
-			if(!autoRight){
-				[self stopRight];
-			}
-			else if(!autoLeft){
-				[self stopLeft];
-			}
-		
+		} else if (autoRelease) {
+			if (!autoRight) [self stopRight];
+			else if (!autoLeft) [self stopLeft];
 		}
 	}
 
@@ -290,7 +265,7 @@ void saveRecording(NSString *name) {
 -(void)goal:(float)a {
 	if (LOGS_ENABLED) NSLog(@"[TrialSession goal] called");
 	if (GetPrefBool(@"RecordMode") && recording != NULL && ![recording isEqual:@""]) {
-		if (LOGS_ENABLED) NSLog(@"[TrialSession goal] saving...");
+		if (LOGS_ENABLED) NSLog(@"[TrialSession goal] asking to save...");
 		
 		HSAlertView *delegate = [[%c(HSAlertView) alloc] init]; 
 		HSAlertView *alertView = [[%c(HSAlertView) alloc] initWithTitle:@"ReBoom" message:@"Would you like to save the TAS recording?" delegate:delegate cancelButtonTitle:@"No" otherButtonTitles:@"Yes", nil];
@@ -302,8 +277,11 @@ void saveRecording(NSString *name) {
 
 // when player taps right
 -(void)right {
-	autoRight = true;
-	autoLeft = false;
+	if (GetPrefBool(@"AutoTAS")) {
+		autoRight = true;
+		autoLeft = false;
+	}
+
 	%orig;
 	if (GetPrefBool(@"RecordMode") && recording != NULL) {
 		if (LOGS_ENABLED) NSLog(@"[TrialSession right] called with record mode on");
@@ -319,8 +297,11 @@ void saveRecording(NSString *name) {
 
 // when player taps left
 -(void)left {
-	autoRight = false;
-	autoLeft = true;
+	if (GetPrefBool(@"AutoTAS")) {
+		autoRight = false;
+		autoLeft = true;
+	}
+
 	%orig;
 	if (GetPrefBool(@"RecordMode") && recording != NULL) {
 		if (LOGS_ENABLED) NSLog(@"[TrialSession left] called with record mode on");
@@ -336,9 +317,6 @@ void saveRecording(NSString *name) {
 
 // when player releases right
 -(void)stopRight {
-	//autoRight = true;
-	//autoLeft = false;
-// 	autoRelease = false;
 	%orig;
 	if (GetPrefBool(@"RecordMode") && recording != NULL) {
 		if (LOGS_ENABLED) NSLog(@"[TrialSession stopRight] called with record mode on");
@@ -354,9 +332,6 @@ void saveRecording(NSString *name) {
 
 // when player releases left
 -(void)stopLeft {
-	//autoLeft = true;
-	//autoRight = false;
-// 	autoRelease = false;
 	%orig;
 	if (GetPrefBool(@"RecordMode") && recording != NULL) {
 		if (LOGS_ENABLED) NSLog(@"[TrialSession stopLeft] called with record mode on");
@@ -373,15 +348,12 @@ void saveRecording(NSString *name) {
 
 //Finding if any button is selected
 %hook HSMenuItem
-- (void)selected {
-	//NSLog(@"autoSelect set true");
-	autoSelected = true;
+-(void)selected {
+	if (GetPrefBool(@"AutoTas")) autoSelected = true;
 	%orig;
 }
-- (void)unselected {
-//	if(GetPrefBool(@"AutoTas")){
-		autoSelected = false;
-//	}
+-(void)unselected {
+	if (GetPrefBool(@"AutoTas")) autoSelected = false;
 	%orig;
 }
 %end
@@ -460,15 +432,15 @@ SettingsItem *recordItem;
 					pauseItem.ReBoom_PrefValue = @"PauseBug";
 					return pauseItem;
 				case 1:
-					SettingsItem *gravityItem;
-					gravityItem = [%c(SettingsItem) itemWithTitle:@"Zero Gravity" value:(GetPrefBool(@"ZeroGrav") ? @"Enabled" : @"Disabled") type:1];
-					gravityItem.ReBoom_PrefValue = @"ZeroGrav";
-					return gravityItem;
-				case 2:
 					SettingsItem *unlockItem;
 					unlockItem = [%c(SettingsItem) itemWithTitle:@"Everything Unlocked" value:(GetPrefBool(@"EverythingUnlocked") ? @"Enabled" : @"Disabled") type:1];
 					unlockItem.ReBoom_PrefValue = @"EverythingUnlocked";
 					return unlockItem;
+				case 2:
+					SettingsItem *tutorialsItem;
+					tutorialsItem = [%c(SettingsItem) itemWithTitle:@"Disable Tutorials" value:(GetPrefBool(@"DisableTutorials") ? @"Enabled" : @"Disabled") type:1];
+					tutorialsItem.ReBoom_PrefValue = @"DisableTutorials";
+					return tutorialsItem;
 				case 3:
 					SettingsItem *icloudItem;
 					icloudItem = [%c(SettingsItem) itemWithTitle:@"Disable iCloud" value:(GetPrefBool(@"DisableICloud") ? @"Enabled" : @"Disabled") type:1];
