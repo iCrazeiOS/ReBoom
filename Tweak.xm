@@ -270,6 +270,9 @@ void saveRecording(NSString *name) {
 		HSAlertView *delegate = [[%c(HSAlertView) alloc] init]; 
 		HSAlertView *alertView = [[%c(HSAlertView) alloc] initWithTitle:@"ReBoom" message:@"Would you like to save the TAS recording?" delegate:delegate cancelButtonTitle:@"No" otherButtonTitles:@"Yes", nil];
 		[alertView show];
+	} else if (GetPrefBool(@"TASMode") && ![self isChallenge] && ![self isTournament]) {
+		if (LOGS_ENABLED) NSLog(@"[TrialSession goal] showing TAS complete alert...");
+		showAlert(@"TAS playback complete", @"Dismiss");
 	}
 
 	%orig;
@@ -297,6 +300,7 @@ void saveRecording(NSString *name) {
 
 // when player taps left
 -(void)left {
+
 	if (GetPrefBool(@"AutoTAS")) {
 		autoRight = false;
 		autoLeft = true;
@@ -399,6 +403,26 @@ void saveRecording(NSString *name) {
 }
 %end
 
+// Disable Game Center
+%hook HSGameCenterManager
++(BOOL)isAvailable {
+	return !GetPrefBool(@"DisableICloud");
+}
+%end
+
+
+
+/* Replace functionality of "buy coins" button */
+
+%hook StoreGetCoinsDialog
+-(void)onEnter  {
+	// Close the dialog immediately
+	[self back];
+	// Add coins
+	[[%c(Player) sharedPlayer] incrementCoins:10000 archive:YES];
+}
+%end
+
 
 
 /*  IN-GAME PREFS */
@@ -428,7 +452,7 @@ SettingsItem *recordItem;
 			switch (indexPath.row) {
 				case 0:
 					SettingsItem *pauseItem;
-					pauseItem = [%c(SettingsItem) itemWithTitle:@"Pause Bug" value:(GetPrefBool(@"PauseBug") ? @"Enabled" : @"Disabled") type:1];
+					pauseItem = [%c(SettingsItem) itemWithTitle:@"Un-patch Pause Bug" value:(GetPrefBool(@"PauseBug") ? @"Enabled" : @"Disabled") type:1];
 					pauseItem.ReBoom_PrefValue = @"PauseBug";
 					return pauseItem;
 				case 1:
@@ -530,6 +554,17 @@ SettingsItem *recordItem;
 		}
 	}
 	%orig;
+}
+%end
+
+// Custom settings footers
+%hook HSLabelSafeBMFont
+-(void)setString:(NSString *)string updateLabel:(BOOL)update {
+	if ([string hasPrefix:@"Boom! version "]) {
+		string = currentLabel < customLabels.count ? customLabels[currentLabel] : @"";
+		currentLabel++;
+	}
+	%orig(string, update);
 }
 %end
 
