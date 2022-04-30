@@ -18,6 +18,7 @@ BOOL LOGS_ENABLED = NO;
 -(BOOL)isChallenge;
 -(BOOL)isTournament;
 -(void)pause;
+-(void)resume;
 -(id)wheely;
 -(NSString *)levelId;
 +(id)currentSession;

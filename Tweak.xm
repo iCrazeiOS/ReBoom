@@ -84,7 +84,8 @@ void loadReplay(NSString *name) {
 					else if ([commands[ii] isEqual:@"ru"]) [strBuffer appendString:@"R"];
 					else if ([commands[ii] isEqual:@"ld"]) [strBuffer appendString:@"l"];
 					else if ([commands[ii] isEqual:@"lu"]) [strBuffer appendString:@"L"];
-					else if ([commands[ii] isEqual:@"***"]) [strBuffer appendString:@"*"];
+					else if ([commands[ii] isEqual:@"**"]) [strBuffer appendString:@"*"];
+					else if ([commands[ii] isEqual:@"--"]) [strBuffer appendString:@"-"];
 					else if ([commands[ii] isEqual:@"log"]) [strBuffer appendString:@"p"];
 				}
 			}
@@ -115,244 +116,245 @@ void saveRecording(NSString *name) {
 	return GetPrefBool(@"PauseBug") ? YES : %orig;
 }
 %end
+
 %hook Wheely
 -(void)update:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 -(void)postUpdate:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 %end
 %hook WaterItemEffect
 -(void)update:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 -(void)postUpdate:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 %end
 %hook TrialLayer
 -(void)update:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 -(void)postUpdate:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 %end
 %hook TrialGameController
 -(void)update:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 -(void)postUpdate:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 %end
 %hook TrialBackground
 -(void)update:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 -(void)postUpdate:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 %end
 %hook Trampoline
 -(void)update:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 -(void)postUpdate:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 %end
 %hook ThemeSelect
 -(void)update:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 -(void)postUpdate:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 %end
 %hook SpringBoard
 -(void)update:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 -(void)postUpdate:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 %end
 %hook SoftBox
 -(void)update:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 -(void)postUpdate:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 %end
 %hook SoftBall
 -(void)update:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 -(void)postUpdate:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 %end
 %hook OilWell
 -(void)update:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 -(void)postUpdate:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 %end
 %hook MovingFlat
 -(void)update:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 -(void)postUpdate:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 %end
 %hook MenuTrialBackground
 -(void)update:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 -(void)postUpdate:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 %end
 %hook News
 -(void)update:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 -(void)postUpdate:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 %end
 %hook MenuTrial
 -(void)update:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 -(void)postUpdate:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 %end
 %hook LevelHelperLoader
 -(void)update:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 -(void)postUpdate:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 %end
 %hook GlassBall
 -(void)update:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 -(void)postUpdate:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 %end
 %hook FireBowl
 -(void)update:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 -(void)postUpdate:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 %end
 %hook Conveyor
 -(void)update:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 -(void)postUpdate:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 %end
 %hook CoinRain
 -(void)update:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 -(void)postUpdate:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 %end
 %hook ChallengeTurn
 -(void)update:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 -(void)postUpdate:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 %end
 %hook ChallengePlayer
 -(void)update:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 -(void)postUpdate:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 %end
 %hook ChallengeForceRandomOpponent
 -(void)update:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 -(void)postUpdate:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 %end
 %hook Challenge
 -(void)update:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 -(void)postUpdate:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 %end
 %hook Cage
 -(void)update:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 -(void)postUpdate:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 %end
 %hook Buoyant
 -(void)update:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 -(void)postUpdate:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 %end
 %hook BridgePart
 -(void)update:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 -(void)postUpdate:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 %end
 %hook Bomb
 -(void)update:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 -(void)postUpdate:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 %end
 %hook Object156
 -(void)update:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 -(void)postUpdate:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 %end
 %hook CCScheduler
 -(void)update:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 -(void)fixedUpdate:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 }
 %end
 
@@ -405,7 +407,7 @@ void saveRecording(NSString *name) {
 }
 
 -(void)update:(float)update {
-	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
 
 	if (GetPrefBool(@"TASMode") && ![self isChallenge] && ![self isTournament]) {
 		if (tas.length > 0 && frameID < tas.length && [tas.commands[frameID] length] > 0) {
@@ -427,6 +429,9 @@ void saveRecording(NSString *name) {
 						break;
 					case '*':
 						[self pause];
+						break;
+					case '-':
+						[self resume];
 						break;
 					case 'p':
 						const CGPoint pos = [((CALayer *)[self wheely]) position];
@@ -520,6 +525,36 @@ void saveRecording(NSString *name) {
 			}
 
 			[recording appendString:@" lu"];
+	}
+}
+
+// when player presses pause
+-(void)pause {
+	%orig;
+	if (GetPrefBool(@"RecordMode") && recording != NULL) {
+		if (LOGS_ENABLED) NSLog(@"[TrialSession pause] called with record mode on");
+			if (lastFrameID < frameID + 1) {
+				if (LOGS_ENABLED) NSLog(@"[TrialSession pause] appending");
+				[recording appendFormat:frameID == 0 ? @"%04lu :" : @"\n%04lu :", frameID + 1];
+				lastFrameID = frameID + 1;
+			}
+
+			[recording appendString:@" **"];
+	}
+}
+
+// when player resumes the game
+-(void)resume {
+	%orig;
+	if (GetPrefBool(@"RecordMode") && recording != NULL) {
+		if (LOGS_ENABLED) NSLog(@"[TrialSession resume] called with record mode on");
+			if (lastFrameID < frameID + 1) {
+				if (LOGS_ENABLED) NSLog(@"[TrialSession resume] appending");
+				[recording appendFormat:frameID == 0 ? @"%04lu :" : @"\n%04lu :", frameID + 1];
+				lastFrameID = frameID + 1;
+			}
+
+			[recording appendString:@" --"];
 	}
 }
 %end
