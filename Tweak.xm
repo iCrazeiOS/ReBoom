@@ -714,12 +714,37 @@ SettingsItem *recordItem;
 }
 %end
 
+
+
+/* hacky ass fix for some random ass bug that only affects one device... */
+
+
+bool firstFooter = false;
+bool secondFooter = false;
+bool thirdFooter = false;
+bool fourthFooter = false;
+
+
 // Custom settings footers
 %hook HSLabelSafeBMFont
 -(void)setString:(NSString *)string updateLabel:(BOOL)update {
 	if ([string hasPrefix:@"Boom! version "]) {
-		string = currentLabel < customLabels.count ? customLabels[currentLabel] : @"";
-		currentLabel++;
+		// NSArray *customLabels = @[@"Miscellaneous", @"TAS Tools", @"Development Options", @"ReBoom by @iCrazeiOS"];
+		// string = ((currentLabel < [customLabels count]) ? customLabels[currentLabel] : @"");
+		// currentLabel++;
+		if (!firstFooter) {
+			firstFooter = true;
+			string = @"Miscellaneous";
+		} else if (!secondFooter) {
+			secondFooter = true;
+			string = @"TAS Tools";
+		} else if (!thirdFooter) {
+			thirdFooter = true;
+			string = @"Development Options";
+		} else if (!fourthFooter) {
+			fourthFooter = true;
+			string = @"ReBoom by @iCrazeiOS";
+		}
 	}
 	%orig(string, update);
 }

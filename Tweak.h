@@ -9,10 +9,6 @@ BOOL LOGS_ENABLED = NO;
 // #define MSG0S(rt,r,x,y) ((void(*)(rt, id, SEL))objc_msgSend_stret)(r, x, @selector(y))    // armv7
 #define MSG0S(rt,r,x,y) ((void(*)(rt, id, SEL))objc_msgSend)(r, x, @selector(y))	// arm64(e)
 
-// these two are for the custom settings footers
-int currentLabel = 0;
-NSArray *customLabels = @[@"Miscellaneous", @"TAS Tools", @"Development Options", @"ReBoom by @iCrazeiOS"];
-
 @interface TrialSession : NSObject
 -(void)right;
 -(void)left;
