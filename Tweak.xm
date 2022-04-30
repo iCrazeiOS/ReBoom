@@ -751,3 +751,11 @@ SettingsItem *recordItem;
 	return %orig;
 }
 %end
+
+
+
+%ctor {
+	NSString *bundleID = [[NSBundle mainBundle] bundleIdentifier];
+	if (!([bundleID containsString:@"com.happysprites.boom"] || [bundleID containsString:@"eu.markstam.boomclone"])) return;
+	%init;
+}
