@@ -53,7 +53,7 @@ inline void SetPrefBool(NSString *key, BOOL value) {
 }
 
 // Load TAS recording
-void loadMovie(NSString *name) {
+void loadReplay(NSString *name) {
 	if (LOGS_ENABLED) NSLog(@"[ReBoom] Loading TAS recording with name: %@", name);
 	tas.length = 0;
 	tas.commands = [[NSMutableArray alloc] init];
@@ -110,34 +110,249 @@ void saveRecording(NSString *name) {
 }
 
 // Fixed Delta & TAS
-%hook CCScheduler
--(void)update:(float)a {
-	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
-}
-%end
 %hook CCDirector
 -(BOOL)useFixedTimestep {
-	return GetPrefBool(@"FixedDelta") ? YES : %orig;
+	return GetPrefBool(@"PauseBug") ? YES : %orig;
 }
 %end
-%hook Object156
--(void)postUpdate:(float)a {
-	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
+%hook Wheely
+-(void)update:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+-(void)postUpdate:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
 }
 %end
-%hook Bomb
--(void)postUpdate:(float)a {
-	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
+%hook WaterItemEffect
+-(void)update:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
 }
-%end
-%hook TrialGameController
--(void)update:(float)a {
-	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
+-(void)postUpdate:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
 }
 %end
 %hook TrialLayer
--(void)update:(float)a {
-	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
+-(void)update:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+-(void)postUpdate:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+%end
+%hook TrialGameController
+-(void)update:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+-(void)postUpdate:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+%end
+%hook TrialBackground
+-(void)update:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+-(void)postUpdate:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+%end
+%hook Trampoline
+-(void)update:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+-(void)postUpdate:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+%end
+%hook ThemeSelect
+-(void)update:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+-(void)postUpdate:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+%end
+%hook SpringBoard
+-(void)update:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+-(void)postUpdate:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+%end
+%hook SoftBox
+-(void)update:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+-(void)postUpdate:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+%end
+%hook SoftBall
+-(void)update:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+-(void)postUpdate:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+%end
+%hook OilWell
+-(void)update:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+-(void)postUpdate:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+%end
+%hook MovingFlat
+-(void)update:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+-(void)postUpdate:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+%end
+%hook MenuTrialBackground
+-(void)update:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+-(void)postUpdate:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+%end
+%hook News
+-(void)update:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+-(void)postUpdate:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+%end
+%hook MenuTrial
+-(void)update:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+-(void)postUpdate:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+%end
+%hook LevelHelperLoader
+-(void)update:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+-(void)postUpdate:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+%end
+%hook GlassBall
+-(void)update:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+-(void)postUpdate:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+%end
+%hook FireBowl
+-(void)update:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+-(void)postUpdate:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+%end
+%hook Conveyor
+-(void)update:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+-(void)postUpdate:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+%end
+%hook CoinRain
+-(void)update:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+-(void)postUpdate:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+%end
+%hook ChallengeTurn
+-(void)update:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+-(void)postUpdate:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+%end
+%hook ChallengePlayer
+-(void)update:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+-(void)postUpdate:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+%end
+%hook ChallengeForceRandomOpponent
+-(void)update:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+-(void)postUpdate:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+%end
+%hook Challenge
+-(void)update:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+-(void)postUpdate:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+%end
+%hook Cage
+-(void)update:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+-(void)postUpdate:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+%end
+%hook Buoyant
+-(void)update:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+-(void)postUpdate:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+%end
+%hook BridgePart
+-(void)update:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+-(void)postUpdate:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+%end
+%hook Bomb
+-(void)update:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+-(void)postUpdate:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+%end
+%hook Object156
+-(void)update:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+-(void)postUpdate:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+%end
+%hook CCScheduler
+-(void)update:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
+}
+-(void)fixedUpdate:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
 }
 %end
 
@@ -155,24 +370,12 @@ void saveRecording(NSString *name) {
 }
 
 -(void)restartLevel {
-	if (GetPrefBool(@"AutoTAS")) {
-		[self stopLeft];
-		[self stopRight];
-		autoLeft = false;
-		autoRight = false;
-	}
-
 	%orig;
 	if (LOGS_ENABLED) NSLog(@"[ReBoom] Restarting level...");
 	[self start_reboom];
 }
 
 -(void)onEnter {
-	if (GetPrefBool(@"AutoTAS")) {
-		autoLeft = false;
-		autoRight = false;
-	}
-
 	%orig;
 	if (LOGS_ENABLED) NSLog(@"[ReBoom] Starting level...");
 	[self start_reboom];
@@ -188,7 +391,7 @@ void saveRecording(NSString *name) {
 	// replay mode
 	if (GetPrefBool(@"TASMode") && ![self isChallenge] && ![self isTournament]) {
 		if (LOGS_ENABLED) NSLog(@"[ReBoom] [TrialSession restartLevel] loading TAS recording...");
-		loadMovie([self levelId]);
+		loadReplay([self levelId]);
 	}
 
 	// record mode
@@ -201,29 +404,8 @@ void saveRecording(NSString *name) {
 	lastFrameID = 0;
 }
 
--(void)update:(float)a {
-	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
-
-	// Spam taps in the direction of the last button you pressed
-	if (GetPrefBool(@"AutoTAS") && ![self isChallenge] && ![self isTournament]){
-		if (!autoSelected) {
-			if (autoRight) {
-				if (autoRelease) {
-					[self stopLeft];
-					[self stopRight];
-				} else [self right];
-			} else if (autoLeft) {
-				if (autoRelease) {
-					[self stopRight];
-					[self stopLeft];
-				} else [self left];
-			}
-			autoRelease = !autoRelease;
-		} else if (autoRelease) {
-			if (!autoRight) [self stopRight];
-			else if (!autoLeft) [self stopLeft];
-		}
-	}
+-(void)update:(float)update {
+	GetPrefBool(@"PauseBug") ? %orig(FIXED_DELTA) : %orig;
 
 	if (GetPrefBool(@"TASMode") && ![self isChallenge] && ![self isTournament]) {
 		if (tas.length > 0 && frameID < tas.length && [tas.commands[frameID] length] > 0) {
@@ -271,8 +453,11 @@ void saveRecording(NSString *name) {
 		HSAlertView *alertView = [[%c(HSAlertView) alloc] initWithTitle:@"ReBoom" message:@"Would you like to save the TAS recording?" delegate:delegate cancelButtonTitle:@"No" otherButtonTitles:@"Yes", nil];
 		[alertView show];
 	} else if (GetPrefBool(@"TASMode") && ![self isChallenge] && ![self isTournament]) {
-		if (LOGS_ENABLED) NSLog(@"[TrialSession goal] showing TAS complete alert...");
-		showAlert(@"TAS playback complete", @"Dismiss");
+		NSString *path = [NSString stringWithFormat:@"%@/%@%@", [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] firstObject].path, [self levelId], TAS_EXT];
+		if ([[NSFileManager defaultManager] fileExistsAtPath:path]) {
+			if (LOGS_ENABLED) NSLog(@"[TrialSession goal] showing TAS completion alert...");
+			showAlert(@"TAS playback complete", @"Dismiss");
+		}
 	}
 
 	%orig;
@@ -280,11 +465,6 @@ void saveRecording(NSString *name) {
 
 // when player taps right
 -(void)right {
-	if (GetPrefBool(@"AutoTAS")) {
-		autoRight = true;
-		autoLeft = false;
-	}
-
 	%orig;
 	if (GetPrefBool(@"RecordMode") && recording != NULL) {
 		if (LOGS_ENABLED) NSLog(@"[TrialSession right] called with record mode on");
@@ -300,12 +480,6 @@ void saveRecording(NSString *name) {
 
 // when player taps left
 -(void)left {
-
-	if (GetPrefBool(@"AutoTAS")) {
-		autoRight = false;
-		autoLeft = true;
-	}
-
 	%orig;
 	if (GetPrefBool(@"RecordMode") && recording != NULL) {
 		if (LOGS_ENABLED) NSLog(@"[TrialSession left] called with record mode on");
@@ -347,18 +521,6 @@ void saveRecording(NSString *name) {
 
 			[recording appendString:@" lu"];
 	}
-}
-%end
-
-//Finding if any button is selected
-%hook HSMenuItem
--(void)selected {
-	if (GetPrefBool(@"AutoTas")) autoSelected = true;
-	%orig;
-}
--(void)unselected {
-	if (GetPrefBool(@"AutoTas")) autoSelected = false;
-	%orig;
 }
 %end
 
@@ -440,7 +602,7 @@ SettingsItem *recordItem;
 	// Tell the game how many rows we have in our custom sections
 	int ret = %orig;
 	if (section == 1) ret = 4;
-	else if (section == 2) ret = 4;
+	else if (section == 2) ret = 3;
 	else if (section == 3) ret = 4;
 	return ret;
 }
@@ -480,17 +642,12 @@ SettingsItem *recordItem;
 					replayItem.ReBoom_PrefValue = @"TASMode";
 					return replayItem;
 				case 1:
-					SettingsItem *autoItem;
-					autoItem = [%c(SettingsItem) itemWithTitle:@"Auto Tas" value:(GetPrefBool(@"AutoTAS") ? @"Enabled" : @"Disabled") type:1];
-					autoItem.ReBoom_PrefValue = @"AutoTAS";
-					return autoItem;
-				case 2:
 					recordItem = [%c(SettingsItem) itemWithTitle:@"Record Mode" value:(GetPrefBool(@"RecordMode") ? @"Enabled" : @"Disabled") type:1];
 					recordItem.ReBoom_PrefValue = @"RecordMode";
 					return recordItem;
-				case 3:
+				case 2:
 					SettingsItem *deltaItem;
-					deltaItem = [%c(SettingsItem) itemWithTitle:@"Fixed Delta Time" value:(GetPrefBool(@"FixedDelta") ? @"Enabled" : @"Disabled") type:1];
+					deltaItem = [%c(SettingsItem) itemWithTitle:@"Fixed Delta Time" value:(YES ? @"Enabled" : @"Disabled") type:1];
 					deltaItem.ReBoom_PrefValue = @"FixedDelta";
 					return deltaItem;
 				default:
