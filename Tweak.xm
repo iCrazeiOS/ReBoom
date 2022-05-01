@@ -2,7 +2,7 @@
 
 // Show the game's custom alert view
 void showAlert(NSString *message, NSString *buttonText) {
-	HSAlertView *delegate = [[%c(HSAlertView) alloc] init]; 
+	HSAlertView *delegate = [[%c(HSAlertView) alloc] init];
 	HSAlertView *alertView = [[%c(HSAlertView) alloc] initWithTitle:@"ReBoom" message:message delegate:delegate cancelButtonTitle:buttonText otherButtonTitles:nil];
 	[alertView show];
 }
@@ -108,6 +108,15 @@ void saveRecording(NSString *name) {
 	if (LOGS_ENABLED) NSLog(@"Saved to %@!", path);
 
 	showAlert(@"TAS recording has been saved!", @"Dismiss");
+}
+
+// Remove ghost file
+void removeGhost(NSString *levelId) {
+	NSArray *paths = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES);
+	NSString *applicationSupportDirectory = [paths firstObject];
+	NSString *ghostPath = [NSString stringWithFormat:@"%@/%@.ghost", applicationSupportDirectory, levelId];
+	if (LOGS_ENABLED) NSLog(@"[ReBoom removeGhost] Removing ghost file for level: %@...", levelId);
+	[[NSFileManager defaultManager] removeItemAtPath:ghostPath error:nil];
 }
 
 // Fixed Delta & TAS
@@ -449,12 +458,12 @@ void saveRecording(NSString *name) {
 }
 
 // on win
--(void)goal:(float)a {
+-(void)goal:(float)goal {
 	if (LOGS_ENABLED) NSLog(@"[TrialSession goal] called");
 	if (GetPrefBool(@"RecordMode") && recording != NULL && ![recording isEqual:@""]) {
 		if (LOGS_ENABLED) NSLog(@"[TrialSession goal] asking to save...");
 		
-		HSAlertView *delegate = [[%c(HSAlertView) alloc] init]; 
+		HSAlertView *delegate = [[%c(HSAlertView) alloc] init];
 		HSAlertView *alertView = [[%c(HSAlertView) alloc] initWithTitle:@"ReBoom" message:@"Would you like to save the TAS recording?" delegate:delegate cancelButtonTitle:@"No" otherButtonTitles:@"Yes", nil];
 		[alertView show];
 	} else if (GetPrefBool(@"TASMode") && ![self isChallenge] && ![self isTournament]) {
@@ -609,14 +618,31 @@ void saveRecording(NSString *name) {
 
 
 
-/* Replace functionality of "buy coins" button */
-
+// Replace functionality of "buy coins" button
 %hook StoreGetCoinsDialog
--(void)onEnter  {
+-(void)onEnter {
 	// Close the dialog immediately
 	[self back];
 	// Add coins
 	[[%c(Player) sharedPlayer] incrementCoins:10000 archive:YES];
+}
+%end
+
+
+
+// Hold down on the Level Sign to reset ghost
+%hook LevelSign
+%property(nonatomic, assign) int selected_time;
+-(void)selected {
+	%orig;
+	self.selected_time = [[NSDate date] timeIntervalSince1970];
+}
+-(void)unselected {
+	if ([[NSDate date] timeIntervalSince1970] - self.selected_time >= 3) {
+		HSAlertView *delegate = [[%c(HSAlertView) alloc] init];
+		HSAlertView *alertView = [[%c(HSAlertView) alloc] initWithTitle:@"Remove Ghost?" message:[NSString stringWithFormat:@"Are you sure you want to reset your ghost for level: '%@'?", [self valueForKey:@"levelId"]] delegate:delegate cancelButtonTitle:@"Yes" otherButtonTitles:@"No", nil];
+		[alertView show];
+	} else %orig;
 }
 %end
 
@@ -751,35 +777,46 @@ SettingsItem *recordItem;
 
 
 
-/* hacky ass fix for some random ass bug that only affects one device... */
+// /* hacky ass fix for some random ass bug that only affects one device... */
+// nvm i've just removed it for now lol
 
-
-bool firstFooter = false;
-bool secondFooter = false;
-bool thirdFooter = false;
-bool fourthFooter = false;
+// bool firstFooter = false;
+// bool secondFooter = false;
+// bool thirdFooter = false;
+// bool fourthFooter = false;
 
 
 // Custom settings footers
 %hook HSLabelSafeBMFont
 -(void)setString:(NSString *)string updateLabel:(BOOL)update {
 	if ([string hasPrefix:@"Boom! version "]) {
+		string = @""; // todo: not this
+
+		// good way
 		// NSArray *customLabels = @[@"Miscellaneous", @"TAS Tools", @"Development Options", @"ReBoom by @iCrazeiOS"];
 		// string = ((currentLabel < [customLabels count]) ? customLabels[currentLabel] : @"");
 		// currentLabel++;
-		if (!firstFooter) {
-			firstFooter = true;
-			string = @"Miscellaneous";
-		} else if (!secondFooter) {
-			secondFooter = true;
-			string = @"TAS Tools";
-		} else if (!thirdFooter) {
-			thirdFooter = true;
-			string = @"Development Options";
-		} else if (!fourthFooter) {
-			fourthFooter = true;
-			string = @"ReBoom by @iCrazeiOS";
-		}
+
+
+		// bad way (but doesnt crash for llsc...)
+		// if (!firstFooter) {
+		// 	firstFooter = true;
+		// 	string = @"Miscellaneous";
+		// } else if (!secondFooter) {
+		// 	secondFooter = true;
+		// 	string = @"TAS Tools";
+		// } else if (!thirdFooter) {
+		// 	thirdFooter = true;
+		// 	string = @"Development Options";
+		// } else if (!fourthFooter) {
+		// 	fourthFooter = true;
+		// 	string = @"ReBoom by @iCrazeiOS";
+
+		// 	fourthFooter = false;
+		// 	thirdFooter = false;
+		// 	secondFooter = false;
+		// 	firstFooter = false;
+		// }
 	}
 	%orig(string, update);
 }
@@ -794,6 +831,9 @@ bool fourthFooter = false;
 	%orig;
 	if ([view.title isEqualToString:@"ReBoom"] && index == 1) {
 		saveRecording([[NSString alloc] initWithFormat:@"%@", [[%c(TrialSession) currentSession] levelId]]);
+	} else if ([view.title isEqualToString:@"Remove Ghost?"] && index == 0) {
+		removeGhost([[%c(TrialSession) currentSession] levelId]);
+		[[%c(TrialSession) currentSession] restartLevel];
 	}
 }
 %end

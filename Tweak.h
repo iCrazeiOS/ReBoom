@@ -10,6 +10,7 @@ BOOL LOGS_ENABLED = NO;
 #define MSG0S(rt,r,x,y) ((void(*)(rt, id, SEL))objc_msgSend)(r, x, @selector(y))	// arm64(e)
 
 @interface TrialSession : NSObject
++(id)currentSession;
 -(void)right;
 -(void)left;
 -(void)stopRight;
@@ -20,8 +21,8 @@ BOOL LOGS_ENABLED = NO;
 -(void)pause;
 -(void)resume;
 -(id)wheely;
+-(void)restartLevel;
 -(NSString *)levelId;
-+(id)currentSession;
 @end
 
 @interface SettingsItem : UITableViewCell
@@ -44,6 +45,10 @@ BOOL LOGS_ENABLED = NO;
 @interface Player : NSObject
 +(Player *)sharedPlayer;
 -(void)incrementCoins:(int)coins archive:(BOOL)archive;
+@end
+
+@interface LevelSign : NSObject
+@property(nonatomic, assign) int selected_time;
 @end
 
 
