@@ -21,7 +21,7 @@ BOOL LOGS_ENABLED = NO;
 -(void)pause;
 -(void)resume;
 -(id)wheely;
--(void)restartLevel;
+-(void)quit;
 -(NSString *)levelId;
 @end
 

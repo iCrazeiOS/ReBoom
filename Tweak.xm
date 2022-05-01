@@ -833,7 +833,7 @@ SettingsItem *recordItem;
 		saveRecording([[NSString alloc] initWithFormat:@"%@", [[%c(TrialSession) currentSession] levelId]]);
 	} else if ([view.title isEqualToString:@"Remove Ghost?"] && index == 0) {
 		removeGhost([[%c(TrialSession) currentSession] levelId]);
-		[[%c(TrialSession) currentSession] restartLevel];
+		[[%c(TrialSession) currentSession] quit];
 	}
 }
 %end
