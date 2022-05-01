@@ -96,8 +96,6 @@ void loadReplay(NSString *name) {
 			tas.length = frame;
 		}
 	}
-
-	[fileContent release];
 }
 
 // Save TAS recording
@@ -424,31 +422,32 @@ void removeGhost(NSString *levelId) {
 			
 			for (int i = 0; i < [list length]; i++) {
 				switch([list characterAtIndex:i]) {
-					case 'r':
+					case 'r': {
 						[self right];
 						break;
-					case 'R':
+					} case 'R': {
 						[self stopRight];
 						break;
-					case 'l':
+					} case 'l': {
 						[self left];
 						break;
-					case 'L':
+					} case 'L': {
 						[self stopLeft];
 						break;
-					case '*':
+					} case '*': {
 						[self pause];
 						break;
-					case '-':
+					} case '-': {
 						[self resume];
 						break;
-					case 'p':
+					} case 'p': {
 						const CGPoint pos = [((CALayer *)[self wheely]) position];
 						CGPoint vel;
 						MSG0S(CGPoint*, &vel, [self wheely], Object88);
 
 						if (LOGS_ENABLED) NSLog(@"\n[%04lu]\nPosition\n\tX: %f\n\tY: %f\nVelocity\n\tM: %f\n\tX: %f\n\tY: %f", frameID + 1, pos.x, pos.y, sqrtf(powf(vel.x, 2) + powf(vel.y, 2)), vel.x, vel.y);
 						break;
+					}
 				}
 			}
 		}
@@ -671,76 +670,80 @@ SettingsItem *recordItem;
 -(id)tableView:(id)view cellForRowAtIndexPath:(NSIndexPath *)indexPath {
 	// Loop through each section (0 is the game's regular settings)
 	switch (indexPath.section) {
-		case 1:
+		case 1: {
 			switch (indexPath.row) {
-				case 0:
+				case 0: {
 					SettingsItem *pauseItem;
 					pauseItem = [%c(SettingsItem) itemWithTitle:@"Un-patch Pause Bug" value:(GetPrefBool(@"PauseBug") ? @"Enabled" : @"Disabled") type:1];
 					pauseItem.ReBoom_PrefValue = @"PauseBug";
 					return pauseItem;
-				case 1:
+				} case 1: {
 					SettingsItem *unlockItem;
 					unlockItem = [%c(SettingsItem) itemWithTitle:@"Everything Unlocked" value:(GetPrefBool(@"EverythingUnlocked") ? @"Enabled" : @"Disabled") type:1];
 					unlockItem.ReBoom_PrefValue = @"EverythingUnlocked";
 					return unlockItem;
-				case 2:
+				} case 2: {
 					SettingsItem *tutorialsItem;
 					tutorialsItem = [%c(SettingsItem) itemWithTitle:@"Disable Tutorials" value:(GetPrefBool(@"DisableTutorials") ? @"Enabled" : @"Disabled") type:1];
 					tutorialsItem.ReBoom_PrefValue = @"DisableTutorials";
 					return tutorialsItem;
-				case 3:
+				} case 3: {
 					SettingsItem *icloudItem;
 					icloudItem = [%c(SettingsItem) itemWithTitle:@"Disable iCloud" value:(GetPrefBool(@"DisableICloud") ? @"Enabled" : @"Disabled") type:1];
 					icloudItem.ReBoom_PrefValue = @"DisableICloud";
 					return icloudItem;
-				default:
+				} default: {
 					return [%c(SettingsItem) itemWithTitle:@"ReBoom" value:@"Error" type:1];
+				}
 			}
-		case 2:
+		} case 2: {
 			switch (indexPath.row) {
-				case 0:
+				case 0: {
 					replayItem = [%c(SettingsItem) itemWithTitle:@"Replay Mode" value:(GetPrefBool(@"TASMode") ? @"Enabled" : @"Disabled") type:1];
 					replayItem.ReBoom_PrefValue = @"TASMode";
 					return replayItem;
-				case 1:
+				} case 1: {
 					recordItem = [%c(SettingsItem) itemWithTitle:@"Record Mode" value:(GetPrefBool(@"RecordMode") ? @"Enabled" : @"Disabled") type:1];
 					recordItem.ReBoom_PrefValue = @"RecordMode";
 					return recordItem;
-				case 2:
+				} case 2: {
 					SettingsItem *deltaItem;
 					deltaItem = [%c(SettingsItem) itemWithTitle:@"Fixed Delta Time" value:(YES ? @"Enabled" : @"Disabled") type:1];
 					deltaItem.ReBoom_PrefValue = @"FixedDelta";
 					return deltaItem;
-				default:
+				} default: {
 					return [%c(SettingsItem) itemWithTitle:@"ReBoom" value:@"Error" type:1];
+				}
 			}
-		case 3:
+		} case 3: {
 			switch (indexPath.row) {
-				case 0:
+				case 0: {
 					SettingsItem *checksumItem;
 					checksumItem = [%c(SettingsItem) itemWithTitle:@"Disable Checksums" value:(GetPrefBool(@"DisableChecksum") ? @"Enabled" : @"Disabled") type:1];
 					checksumItem.ReBoom_PrefValue = @"DisableChecksum";
 					return checksumItem;
-				case 1:
+				} case 1: {
 					SettingsItem *requestItem;
 					requestItem = [%c(SettingsItem) itemWithTitle:@"Log Requests" value:(GetPrefBool(@"LogRequest") ? @"Enabled" : @"Disabled") type:1];
 					requestItem.ReBoom_PrefValue = @"LogRequest";
 					return requestItem;
-				case 2:
+				} case 2: {
 					SettingsItem *responseItem;
 					responseItem = [%c(SettingsItem) itemWithTitle:@"Log Responses" value:(GetPrefBool(@"LogResponse") ? @"Enabled" : @"Disabled") type:1];
 					responseItem.ReBoom_PrefValue = @"LogResponse";
 					return responseItem;
-				case 3:
+				} case 3: {
 					SettingsItem *encryptionItem;
 					encryptionItem = [%c(SettingsItem) itemWithTitle:@"Disable Encryption" value:(GetPrefBool(@"DisableEncryption") ? @"Enabled" : @"Disabled") type:1];
 					encryptionItem.ReBoom_PrefValue = @"DisableEncryption";
 					return encryptionItem;
-				default:
+				} default: {
 					return [%c(SettingsItem) itemWithTitle:@"ReBoom" value:@"Error" type:1];
+				}
 			}
-		default:
+		} default: {
 			return %orig;
+		}
 	}
 	
 	return %orig;
