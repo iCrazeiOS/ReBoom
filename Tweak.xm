@@ -629,13 +629,14 @@ void removeGhost(NSString *levelId) {
 
 
 
-// Hold down on the Level Sign to reset ghost
+// Hold down on the Level Sign (for 3 seconds) to reset ghost
 %hook LevelSign
 %property(nonatomic, assign) int selected_time;
 -(void)selected {
 	%orig;
 	self.selected_time = [[NSDate date] timeIntervalSince1970];
 }
+
 -(void)unselected {
 	if ([[NSDate date] timeIntervalSince1970] - self.selected_time >= 3) {
 		HSAlertView *delegate = [[%c(HSAlertView) alloc] init];
@@ -653,7 +654,7 @@ SettingsItem *replayItem;
 SettingsItem *recordItem;
 
 %hook Settings
--(NSInteger) numberOfSectionsInTableView:(UITableView*)tableView {
+-(NSInteger)numberOfSectionsInTableView:(UITableView*)tableView {
 	// Tell the game how many sections we'll have
 	return 4;
 }
@@ -854,6 +855,62 @@ SettingsItem *recordItem;
 	return %orig;
 }
 %end
+
+
+
+
+
+%hook CustomNavigationViewController
+-(NSArray *)keyCommands {
+	UIKeyCommand *leftArrowKeyCommand = [UIKeyCommand keyCommandWithInput:UIKeyInputLeftArrow modifierFlags:0 action:@selector(hardwareKeyboardLeftArrowPressed)];
+	UIKeyCommand *rightArrowKeyCommand = [UIKeyCommand keyCommandWithInput:UIKeyInputRightArrow modifierFlags:0 action:@selector(hardwareKeyboardRightArrowPressed)];
+	UIKeyCommand *downArrowKeyCommand = [UIKeyCommand keyCommandWithInput:UIKeyInputDownArrow modifierFlags:0 action:@selector(hardwareKeyboardDownArrowPressed)];
+	UIKeyCommand *escapeKeyCommand = [UIKeyCommand keyCommandWithInput:UIKeyInputEscape modifierFlags:0 action:@selector(hardwareKeyboardEscapePressed)];
+	UIKeyCommand *RKeyCommand = [UIKeyCommand keyCommandWithInput:@"r" modifierFlags:0 action:@selector(hardwareKeyboardRKeyPressed)];
+	return @[leftArrowKeyCommand, rightArrowKeyCommand, downArrowKeyCommand, escapeKeyCommand, RKeyCommand];
+}
+
+-(BOOL)canBecomeFirstResponder {
+	return YES;
+}
+
+%new
+-(void)hardwareKeyboardLeftArrowPressed {
+	[[%c(TrialSession) currentSession] left];
+	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.1 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+		[[%c(TrialSession) currentSession] stopLeft];
+	});
+}
+
+%new
+-(void)hardwareKeyboardRightArrowPressed {
+	[[%c(TrialSession) currentSession] right];
+	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.1 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+		[[%c(TrialSession) currentSession] stopRight];
+	});
+}
+
+%new
+-(void)hardwareKeyboardDownArrowPressed {
+	[[%c(TrialSession) currentSession] left];
+	[[%c(TrialSession) currentSession] right];
+	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.2 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+		[[%c(TrialSession) currentSession] stopLeft];
+		[[%c(TrialSession) currentSession] stopRight];
+	});
+}
+
+%new
+-(void)hardwareKeyboardEscapePressed {
+	((TrialSession *)[%c(TrialSession) currentSession]).paused ? [[%c(TrialSession) currentSession] resume] : [[%c(TrialSession) currentSession] pause];
+}
+
+%new
+-(void)hardwareKeyboardRKeyPressed {
+	[[%c(TrialSession) currentSession] restartLevel];
+}
+%end
+
 
 
 

@@ -10,6 +10,7 @@ BOOL LOGS_ENABLED = NO;
 #define MSG0S(rt,r,x,y) ((void(*)(rt, id, SEL))objc_msgSend)(r, x, @selector(y))	// arm64(e)
 
 @interface TrialSession : NSObject
+@property(assign, nonatomic) BOOL paused;
 +(id)currentSession;
 -(void)right;
 -(void)left;
@@ -23,6 +24,7 @@ BOOL LOGS_ENABLED = NO;
 -(id)wheely;
 -(void)quit;
 -(NSString *)levelId;
+-(void)restartLevel;
 @end
 
 @interface SettingsItem : UITableViewCell
