@@ -1,5 +1,38 @@
 #import "Tweak.h"
 
+NSString *getLevelURL() {
+	NSString *path = [NSString stringWithFormat:@"%@/!prefs.plist", [[[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] firstObject] path]];
+
+	// Create file if it doesn't exist
+	if (![[NSFileManager defaultManager] fileExistsAtPath:path]) {
+		[[NSFileManager defaultManager] createFileAtPath:path contents:nil attributes:nil];
+	}
+
+	// Load prefs from file
+	NSMutableDictionary *prefsDict = [NSMutableDictionary dictionary];
+	[prefsDict addEntriesFromDictionary:[NSDictionary dictionaryWithContentsOfFile:path]];
+	// If key doesn't exist, set it to false ("Disabled")
+	if (![[prefsDict allKeys] containsObject:@"CustomLevelURL"]) {
+		[prefsDict setValue:@"" forKey:@"CustomLevelURL"];
+		[prefsDict writeToFile:path atomically:YES];
+		return @"";
+	}
+
+	// Get the value for the key
+	NSString *value = [prefsDict valueForKey:@"CustomLevelURL"];
+	return value;
+
+	// return @"https://boom.markstam.eu/storage/online-levels/67f2b95b7271a20398120b6f3557d913.plhs";
+}
+
+void setLevelURL(NSString *url) {
+	NSString *path = [NSString stringWithFormat:@"%@/!prefs.plist", [[[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] firstObject] path]];
+	NSMutableDictionary *prefsDict = [NSMutableDictionary dictionary];
+	[prefsDict addEntriesFromDictionary:[NSDictionary dictionaryWithContentsOfFile:path]];
+	[prefsDict setObject:url forKey:@"CustomLevelURL"];
+	[prefsDict writeToFile:path atomically:YES];
+}
+
 // Show the game's custom alert view
 void showAlert(NSString *message, NSString *buttonText) {
 	HSAlertView *delegate = [[%c(HSAlertView) alloc] init];
@@ -22,7 +55,7 @@ inline BOOL GetPrefBool(NSString *key) {
 	// If key doesn't exist, set it to false ("Disabled")
 	if (![[prefsDict allKeys] containsObject:key]) {
 		id defaultValue = @(NO);
-		if ([@[@"DisableICloud", @"FixedDelta", @"DisableChecksum"] containsObject:key]) defaultValue = @(YES);
+		if ([key isEqualToString:@"FixedDelta"]) defaultValue = @(YES);
 		[prefsDict setValue:defaultValue forKey:key];
 		[prefsDict writeToFile:path atomically:YES];
 		return GetPrefBool(key);
@@ -34,7 +67,7 @@ inline BOOL GetPrefBool(NSString *key) {
 	// If there is no value, set it to false ("Disabled")
 	if (!value) {
 		id defaultValue = @(NO);
-		if ([@[@"DisableICloud", @"FixedDelta", @"DisableChecksum"] containsObject:key]) defaultValue = @(YES);
+		if ([key isEqualToString:@"FixedDelta"]) defaultValue = @(YES);
 		[prefsDict setValue:defaultValue forKey:key];
 		[prefsDict writeToFile:path atomically:YES];
 		return GetPrefBool(key);
@@ -86,7 +119,6 @@ void loadReplay(NSString *name) {
 					else if ([commands[ii] isEqual:@"lu"]) [strBuffer appendString:@"L"];
 					else if ([commands[ii] isEqual:@"**"]) [strBuffer appendString:@"*"];
 					else if ([commands[ii] isEqual:@"--"]) [strBuffer appendString:@"-"];
-					else if ([commands[ii] isEqual:@"log"]) [strBuffer appendString:@"p"];
 				}
 			}
 
@@ -367,6 +399,18 @@ void removeGhost(NSString *levelId) {
 
 // TAS, Unlocks, Pause Bug, Disable Tutorials
 %hook TrialSession
+-(id)initWithLevel:(id)level challenge:(id)challenge tournament:(id)tournament {
+	if (challenge != NULL || tournament != NULL) return %orig;
+
+	NSString *customLevelURL = getLevelURL();
+	if (![customLevelURL isEqualToString:@""]) {
+		level = [NSMutableDictionary dictionaryWithDictionary:level];
+		level[@"url"] = customLevelURL;
+	}
+
+	return %orig(level, challenge, tournament);
+}
+
 -(void)showTutorial {
 	if (!GetPrefBool(@"DisableTutorials")) %orig;
 }
@@ -388,6 +432,10 @@ void removeGhost(NSString *levelId) {
 	%orig;
 	if (LOGS_ENABLED) NSLog(@"[ReBoom] Starting level...");
 	[self start_reboom];
+
+	if (GetPrefBool(@"HideControls")) {
+		[[[%c(TrialSession) currentSession] hud] hideTouchControls:YES];
+	}
 }
 
 %new
@@ -439,13 +487,6 @@ void removeGhost(NSString *levelId) {
 						break;
 					} case '-': {
 						[self resume];
-						break;
-					} case 'p': {
-						const CGPoint pos = [((CALayer *)[self wheely]) position];
-						CGPoint vel;
-						MSG0S(CGPoint*, &vel, [self wheely], Object88);
-
-						if (LOGS_ENABLED) NSLog(@"\n[%04lu]\nPosition\n\tX: %f\n\tY: %f\nVelocity\n\tM: %f\n\tX: %f\n\tY: %f", frameID + 1, pos.x, pos.y, sqrtf(powf(vel.x, 2) + powf(vel.y, 2)), vel.x, vel.y);
 						break;
 					}
 				}
@@ -590,28 +631,55 @@ void removeGhost(NSString *levelId) {
 // Disable checksums
 %hook Checksums
 +(BOOL)verify_file:(id)file {
-	return GetPrefBool(@"DisableChecksums") ? YES : %orig;
+	return YES;
 }
 %end
 
-// Unlock Everything
 %hook Player
+// Unlock Everything
 -(BOOL)hasItem:(id)item id:(id)anId {
 	return GetPrefBool(@"EverythingUnlocked") ? YES : %orig;
 }
-%end
 
 // Disable iCloud
-%hook Player
 -(BOOL)switchToICloudPlayer:(id)icloudPlayer {
-	return GetPrefBool(@"DisableICloud") ? NO : %orig;
+	return NO;
+}
+
+// Custom server
++(void)setHost:(id)host {
+    %orig(SERVER_HOST);
+}
+%end
+
+%hook HSGameConfiguration
++(void)setHost:(id)host {
+    %orig(SERVER_HOST);
+}
+%end
+
+%hook HSNews
++(void)setHost:(id)host {
+    %orig(SERVER_HOST);
+}
+%end
+
+%hook ChallengeClient
++(void)setHost:(id)host {
+    %orig(SERVER_HOST);
+}
+%end
+
+%hook TournamentsClient
++(void)setTournamentUrl:(id)url {
+	%orig([NSString stringWithFormat:@"%@/tournaments/", SERVER_HOST]);
 }
 %end
 
 // Disable Game Center
 %hook HSGameCenterManager
 +(BOOL)isAvailable {
-	return !GetPrefBool(@"DisableICloud");
+	return NO;
 }
 %end
 
@@ -652,6 +720,7 @@ void removeGhost(NSString *levelId) {
 
 SettingsItem *replayItem;
 SettingsItem *recordItem;
+SettingsItem *levelURLItem;
 
 %hook Settings
 -(NSInteger)numberOfSectionsInTableView:(UITableView*)tableView {
@@ -662,14 +731,26 @@ SettingsItem *recordItem;
 -(int)tableView:(id)view numberOfRowsInSection:(int)section {
 	// Tell the game how many rows we have in our custom sections
 	int ret = %orig;
-	if (section == 1) ret = 4;
+	if (section == 0) ret -= 2; // we want to remove the "Restore purchases" and "iCloud" buttons
+	else if (section == 1) ret = 4;
 	else if (section == 2) ret = 3;
-	else if (section == 3) ret = 4;
+	else if (section == 3) ret = 3;
 	return ret;
 }
 
 -(id)tableView:(id)view cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-	// Loop through each section (0 is the game's regular settings)
+	// Game's default section
+	if (indexPath.section == 0) {
+		SettingsItem *orig = %orig;
+
+		// Check title of button, as its index may vary
+		NSString *origText = ((CCLabelTTF *)[orig valueForKey:@"titleLabel"]).string;
+		if ([origText containsString:@"Facebook"]) { // modify the facebook button
+			levelURLItem = [%c(SettingsItem) itemWithTitle:@"Custom Level URL" value:[getLevelURL() isEqualToString:@""] ? @"Unset" : @"Set" type:1];
+			return levelURLItem;
+		}
+	}
+	// Loop through our custom sections
 	switch (indexPath.section) {
 		case 1: {
 			switch (indexPath.row) {
@@ -689,10 +770,10 @@ SettingsItem *recordItem;
 					tutorialsItem.ReBoom_PrefValue = @"DisableTutorials";
 					return tutorialsItem;
 				} case 3: {
-					SettingsItem *icloudItem;
-					icloudItem = [%c(SettingsItem) itemWithTitle:@"Disable iCloud" value:(GetPrefBool(@"DisableICloud") ? @"Enabled" : @"Disabled") type:1];
-					icloudItem.ReBoom_PrefValue = @"DisableICloud";
-					return icloudItem;
+					SettingsItem *hideControlsItem;
+					hideControlsItem = [%c(SettingsItem) itemWithTitle:@"Hide Touch Controls" value:(GetPrefBool(@"HideControls") ? @"Enabled" : @"Disabled") type:1];
+					hideControlsItem.ReBoom_PrefValue = @"HideControls";
+					return hideControlsItem;
 				} default: {
 					return [%c(SettingsItem) itemWithTitle:@"ReBoom" value:@"Error" type:1];
 				}
@@ -719,21 +800,16 @@ SettingsItem *recordItem;
 		} case 3: {
 			switch (indexPath.row) {
 				case 0: {
-					SettingsItem *checksumItem;
-					checksumItem = [%c(SettingsItem) itemWithTitle:@"Disable Checksums" value:(GetPrefBool(@"DisableChecksum") ? @"Enabled" : @"Disabled") type:1];
-					checksumItem.ReBoom_PrefValue = @"DisableChecksum";
-					return checksumItem;
-				} case 1: {
 					SettingsItem *requestItem;
 					requestItem = [%c(SettingsItem) itemWithTitle:@"Log Requests" value:(GetPrefBool(@"LogRequest") ? @"Enabled" : @"Disabled") type:1];
 					requestItem.ReBoom_PrefValue = @"LogRequest";
 					return requestItem;
-				} case 2: {
+				} case 1: {
 					SettingsItem *responseItem;
 					responseItem = [%c(SettingsItem) itemWithTitle:@"Log Responses" value:(GetPrefBool(@"LogResponse") ? @"Enabled" : @"Disabled") type:1];
 					responseItem.ReBoom_PrefValue = @"LogResponse";
 					return responseItem;
-				} case 3: {
+				} case 2: {
 					SettingsItem *encryptionItem;
 					encryptionItem = [%c(SettingsItem) itemWithTitle:@"Disable Encryption" value:(GetPrefBool(@"DisableEncryption") ? @"Enabled" : @"Disabled") type:1];
 					encryptionItem.ReBoom_PrefValue = @"DisableEncryption";
@@ -755,14 +831,13 @@ SettingsItem *recordItem;
 // Add our custom property
 %property (strong) NSString *ReBoom_PrefValue;
 -(void)unselected {
-	SettingsItem *settingsItem = self;
 	// If it is one of our buttons
-	if (settingsItem.ReBoom_PrefValue) {
+	if (self.ReBoom_PrefValue) {
 		if ([[[self valueForKey:@"valueLabel"] valueForKey:@"string_"] isEqualToString:@"Enabled"]) {
-			SetPrefBool(settingsItem.ReBoom_PrefValue, NO);
+			SetPrefBool(self.ReBoom_PrefValue, NO);
 			[self setValue:@"Disabled"];
 		} else {
-			SetPrefBool(settingsItem.ReBoom_PrefValue, YES);
+			SetPrefBool(self.ReBoom_PrefValue, YES);
 			[self setValue:@"Enabled"];
 
 			// Make the replay mode button and record mode button conflict (so you can only have one enabled at once)
@@ -774,6 +849,11 @@ SettingsItem *recordItem;
 				[replayItem unselected];
 			}
 		}
+	} else if (self == levelURLItem) {
+		HSAlertView *alertView = [[%c(HSAlertView) alloc] initWithTitle:@"Custom Level URL"  message:nil delegate:[[%c(HSAlertView) alloc] init] cancelButtonTitle:@"Cancel" otherButtonTitles:@"Save", nil];
+		alertView.style = 1; // style with textfield
+		alertView.inputTextField.placeholder = @"Leave blank to disable";
+		[alertView show];
 	}
 	%orig;
 }
@@ -789,7 +869,7 @@ SettingsItem *recordItem;
 // bool thirdFooter = false;
 // bool fourthFooter = false;
 
-
+int currentLabel = 0;
 // Custom settings footers
 %hook HSLabelSafeBMFont
 -(void)setString:(NSString *)string updateLabel:(BOOL)update {
@@ -797,9 +877,9 @@ SettingsItem *recordItem;
 		string = @""; // todo: not this
 
 		// good way
-		// NSArray *customLabels = @[@"Miscellaneous", @"TAS Tools", @"Development Options", @"ReBoom by @iCrazeiOS"];
-		// string = ((currentLabel < [customLabels count]) ? customLabels[currentLabel] : @"");
-		// currentLabel++;
+		NSArray *customLabels = @[@"Miscellaneous", @"TAS Tools", @"Development Options", @"ReBoom by @iCrazeiOS"];
+		string = ((currentLabel < [customLabels count]) ? customLabels[currentLabel] : @"");
+		currentLabel++;
 
 
 		// bad way (but doesnt crash for llsc...)
@@ -838,6 +918,11 @@ SettingsItem *recordItem;
 	} else if ([view.title isEqualToString:@"Remove Ghost?"] && index == 0) {
 		removeGhost([[%c(TrialSession) currentSession] levelId]);
 		[[%c(TrialSession) currentSession] quit];
+	} else if ([view.title isEqualToString:@"Custom Level URL"] && index == 1) {
+		NSString *levelURL = view.inputTextField.text;
+		if (![levelURL isEqualToString:@""] && ![levelURL hasPrefix:@"http"]) levelURL = [@"https://" stringByAppendingString:levelURL]; // all sites should be using https by now. many will refuse http, so I will be forcing a https prefix if no protocol is provided
+		setLevelURL(levelURL);
+		[levelURLItem setValue:[levelURL isEqualToString:@""] ? @"Unset" : @"Set"];
 	}
 }
 %end
@@ -857,25 +942,25 @@ SettingsItem *recordItem;
 %end
 
 
-
-
-
+// Add key press listener to CustomSettingsViewController
 %hook CustomNavigationViewController
 -(NSArray *)keyCommands {
-	UIKeyCommand *leftArrowKeyCommand = [UIKeyCommand keyCommandWithInput:UIKeyInputLeftArrow modifierFlags:0 action:@selector(hardwareKeyboardLeftArrowPressed)];
-	UIKeyCommand *rightArrowKeyCommand = [UIKeyCommand keyCommandWithInput:UIKeyInputRightArrow modifierFlags:0 action:@selector(hardwareKeyboardRightArrowPressed)];
-	UIKeyCommand *downArrowKeyCommand = [UIKeyCommand keyCommandWithInput:UIKeyInputDownArrow modifierFlags:0 action:@selector(hardwareKeyboardDownArrowPressed)];
-	UIKeyCommand *escapeKeyCommand = [UIKeyCommand keyCommandWithInput:UIKeyInputEscape modifierFlags:0 action:@selector(hardwareKeyboardEscapePressed)];
-	UIKeyCommand *RKeyCommand = [UIKeyCommand keyCommandWithInput:@"r" modifierFlags:0 action:@selector(hardwareKeyboardRKeyPressed)];
-	return @[leftArrowKeyCommand, rightArrowKeyCommand, downArrowKeyCommand, escapeKeyCommand, RKeyCommand];
+	UIKeyCommand *leftArrowKeyCommand = [UIKeyCommand keyCommandWithInput:UIKeyInputLeftArrow modifierFlags:0 action:@selector(hardwareKeyboardLeftArrowPressed)]; // left arrow to move left
+	UIKeyCommand *rightArrowKeyCommand = [UIKeyCommand keyCommandWithInput:UIKeyInputRightArrow modifierFlags:0 action:@selector(hardwareKeyboardRightArrowPressed)]; // right arrow to move right
+	UIKeyCommand *downArrowKeyCommand = [UIKeyCommand keyCommandWithInput:UIKeyInputDownArrow modifierFlags:0 action:@selector(hardwareKeyboardDownArrowPressed)]; // down arrow to stop
+	UIKeyCommand *escapeKeyCommand = [UIKeyCommand keyCommandWithInput:UIKeyInputEscape modifierFlags:0 action:@selector(hardwareKeyboardEscapePressed)]; // escape to pause
+	UIKeyCommand *RKeyCommand = [UIKeyCommand keyCommandWithInput:@"r" modifierFlags:0 action:@selector(hardwareKeyboardRKeyPressed)]; // R key to restart
+	UIKeyCommand *FKeyCommand = [UIKeyCommand keyCommandWithInput:@"f" modifierFlags:0 action:@selector(showFlex)]; // temp dev bind
+	return @[leftArrowKeyCommand, rightArrowKeyCommand, downArrowKeyCommand, escapeKeyCommand, RKeyCommand, FKeyCommand];
 }
 
+// we need this to make the key listeners work
 -(BOOL)canBecomeFirstResponder {
 	return YES;
 }
 
 %new
--(void)hardwareKeyboardLeftArrowPressed {
+-(void)hardwareKeyboardLeftArrowPressed { // left arrow to move left
 	[[%c(TrialSession) currentSession] left];
 	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.1 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
 		[[%c(TrialSession) currentSession] stopLeft];
@@ -883,7 +968,7 @@ SettingsItem *recordItem;
 }
 
 %new
--(void)hardwareKeyboardRightArrowPressed {
+-(void)hardwareKeyboardRightArrowPressed { // right arrow to move right
 	[[%c(TrialSession) currentSession] right];
 	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.1 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
 		[[%c(TrialSession) currentSession] stopRight];
@@ -891,7 +976,8 @@ SettingsItem *recordItem;
 }
 
 %new
--(void)hardwareKeyboardDownArrowPressed {
+-(void)hardwareKeyboardDownArrowPressed { // down arrow to stop
+	// doesnt work properly but it isn't a priority atm
 	[[%c(TrialSession) currentSession] left];
 	[[%c(TrialSession) currentSession] right];
 	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.2 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
@@ -901,15 +987,21 @@ SettingsItem *recordItem;
 }
 
 %new
--(void)hardwareKeyboardEscapePressed {
+-(void)hardwareKeyboardEscapePressed { // escape to pause
 	((TrialSession *)[%c(TrialSession) currentSession]).paused ? [[%c(TrialSession) currentSession] resume] : [[%c(TrialSession) currentSession] pause];
 }
 
 %new
--(void)hardwareKeyboardRKeyPressed {
+-(void)hardwareKeyboardRKeyPressed { // R key to restart
 	[[%c(TrialSession) currentSession] restartLevel];
 }
+
+%new
+-(void)showFlex { // temp dev bind
+	[[%c(FLEXManager) sharedManager] toggleExplorer];
+}
 %end
+
 
 
 

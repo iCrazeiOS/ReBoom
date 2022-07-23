@@ -5,9 +5,11 @@ BOOL LOGS_ENABLED = NO;
 
 #define TAS_EXT @".btas"
 #define FIXED_DELTA (1.0f / 60.0f)
+#define SERVER_HOST @"https://boom.markstam.eu"
 
-// #define MSG0S(rt,r,x,y) ((void(*)(rt, id, SEL))objc_msgSend_stret)(r, x, @selector(y))    // armv7
-#define MSG0S(rt,r,x,y) ((void(*)(rt, id, SEL))objc_msgSend)(r, x, @selector(y))	// arm64(e)
+@interface TrialHUD : NSObject
+-(void)hideTouchControls:(BOOL)hide;
+@end
 
 @interface TrialSession : NSObject
 @property(assign, nonatomic) BOOL paused;
@@ -25,6 +27,7 @@ BOOL LOGS_ENABLED = NO;
 -(void)quit;
 -(NSString *)levelId;
 -(void)restartLevel;
+-(TrialHUD *)hud;
 @end
 
 @interface SettingsItem : UITableViewCell
@@ -53,6 +56,15 @@ BOOL LOGS_ENABLED = NO;
 @property(nonatomic, assign) int selected_time;
 @end
 
+@interface CCLabelTTF : NSObject
+@property (nonatomic,copy) NSString *string;
+@end
+
+@interface SettingsItem () {
+	CCLabelTTF *titleLabel;
+}
+@end
+
 
 
 /* TAS Stuff */
@@ -64,3 +76,12 @@ struct Movie {
 Movie tas;
 NSMutableString* recording;
 unsigned long frameID, lastFrameID = 0;
+
+
+
+
+
+@interface FLEXManager : NSObject
++(id)sharedManager;
+-(void)toggleExplorer;
+@end
