@@ -718,14 +718,18 @@ void removeGhost(NSString *levelId) {
 
 /*  IN-GAME PREFS */
 
-SettingsItem *replayItem;
-SettingsItem *recordItem;
-SettingsItem *levelURLItem;
+SettingsItem *replayItem, *recordItem, *levelURLItem, *discordItem;
+int currentHeaderLabel = 0;
 
 %hook Settings
+-(void)onExit { // resets the counter used to show custom labels
+	%orig;
+	currentHeaderLabel = 0;
+}
+
 -(NSInteger)numberOfSectionsInTableView:(UITableView*)tableView {
 	// Tell the game how many sections we'll have
-	return 4;
+	return 5;
 }
 
 -(int)tableView:(id)view numberOfRowsInSection:(int)section {
@@ -735,6 +739,7 @@ SettingsItem *levelURLItem;
 	else if (section == 1) ret = 4;
 	else if (section == 2) ret = 3;
 	else if (section == 3) ret = 3;
+	else if (section == 4) ret = 1;
 	return ret;
 }
 
@@ -744,9 +749,8 @@ SettingsItem *levelURLItem;
 		SettingsItem *orig = %orig;
 
 		// Check title of button, as its index may vary
-		NSString *origText = ((CCLabelTTF *)[orig valueForKey:@"titleLabel"]).string;
-		if ([origText containsString:@"Facebook"]) { // modify the facebook button
-			levelURLItem = [%c(SettingsItem) itemWithTitle:@"Custom Level URL" value:[getLevelURL() isEqualToString:@""] ? @"Unset" : @"Set" type:1];
+		if ([((CCLabelTTF *)[orig valueForKey:@"titleLabel"]).string containsString:@"Facebook"]) { // modify the facebook button
+			levelURLItem = [%c(SettingsItem) itemWithTitle:@"Custom Level" value:[getLevelURL() isEqualToString:@""] ? @"Unset" : @"Set" type:1];
 			return levelURLItem;
 		}
 	}
@@ -755,23 +759,19 @@ SettingsItem *levelURLItem;
 		case 1: {
 			switch (indexPath.row) {
 				case 0: {
-					SettingsItem *pauseItem;
-					pauseItem = [%c(SettingsItem) itemWithTitle:@"Un-patch Pause Bug" value:(GetPrefBool(@"PauseBug") ? @"Enabled" : @"Disabled") type:1];
+					SettingsItem *pauseItem = [%c(SettingsItem) itemWithTitle:@"Un-patch Pause Bug" value:(GetPrefBool(@"PauseBug") ? @"Enabled" : @"Disabled") type:1];
 					pauseItem.ReBoom_PrefValue = @"PauseBug";
 					return pauseItem;
 				} case 1: {
-					SettingsItem *unlockItem;
-					unlockItem = [%c(SettingsItem) itemWithTitle:@"Everything Unlocked" value:(GetPrefBool(@"EverythingUnlocked") ? @"Enabled" : @"Disabled") type:1];
+					SettingsItem *unlockItem = [%c(SettingsItem) itemWithTitle:@"Everything Unlocked" value:(GetPrefBool(@"EverythingUnlocked") ? @"Enabled" : @"Disabled") type:1];
 					unlockItem.ReBoom_PrefValue = @"EverythingUnlocked";
 					return unlockItem;
 				} case 2: {
-					SettingsItem *tutorialsItem;
-					tutorialsItem = [%c(SettingsItem) itemWithTitle:@"Disable Tutorials" value:(GetPrefBool(@"DisableTutorials") ? @"Enabled" : @"Disabled") type:1];
+					SettingsItem *tutorialsItem = [%c(SettingsItem) itemWithTitle:@"Disable Tutorials" value:(GetPrefBool(@"DisableTutorials") ? @"Enabled" : @"Disabled") type:1];
 					tutorialsItem.ReBoom_PrefValue = @"DisableTutorials";
 					return tutorialsItem;
 				} case 3: {
-					SettingsItem *hideControlsItem;
-					hideControlsItem = [%c(SettingsItem) itemWithTitle:@"Hide Touch Controls" value:(GetPrefBool(@"HideControls") ? @"Enabled" : @"Disabled") type:1];
+					SettingsItem *hideControlsItem = [%c(SettingsItem) itemWithTitle:@"Hide Touch Controls" value:(GetPrefBool(@"HideControls") ? @"Enabled" : @"Disabled") type:1];
 					hideControlsItem.ReBoom_PrefValue = @"HideControls";
 					return hideControlsItem;
 				} default: {
@@ -789,8 +789,7 @@ SettingsItem *levelURLItem;
 					recordItem.ReBoom_PrefValue = @"RecordMode";
 					return recordItem;
 				} case 2: {
-					SettingsItem *deltaItem;
-					deltaItem = [%c(SettingsItem) itemWithTitle:@"Fixed Delta Time" value:(YES ? @"Enabled" : @"Disabled") type:1];
+					SettingsItem *deltaItem = [%c(SettingsItem) itemWithTitle:@"Fixed Delta Time" value:(YES ? @"Enabled" : @"Disabled") type:1];
 					deltaItem.ReBoom_PrefValue = @"FixedDelta";
 					return deltaItem;
 				} default: {
@@ -800,20 +799,26 @@ SettingsItem *levelURLItem;
 		} case 3: {
 			switch (indexPath.row) {
 				case 0: {
-					SettingsItem *requestItem;
-					requestItem = [%c(SettingsItem) itemWithTitle:@"Log Requests" value:(GetPrefBool(@"LogRequest") ? @"Enabled" : @"Disabled") type:1];
+					SettingsItem *requestItem = [%c(SettingsItem) itemWithTitle:@"Log Requests" value:(GetPrefBool(@"LogRequest") ? @"Enabled" : @"Disabled") type:1];
 					requestItem.ReBoom_PrefValue = @"LogRequest";
 					return requestItem;
 				} case 1: {
-					SettingsItem *responseItem;
-					responseItem = [%c(SettingsItem) itemWithTitle:@"Log Responses" value:(GetPrefBool(@"LogResponse") ? @"Enabled" : @"Disabled") type:1];
+					SettingsItem *responseItem = [%c(SettingsItem) itemWithTitle:@"Log Responses" value:(GetPrefBool(@"LogResponse") ? @"Enabled" : @"Disabled") type:1];
 					responseItem.ReBoom_PrefValue = @"LogResponse";
 					return responseItem;
 				} case 2: {
-					SettingsItem *encryptionItem;
-					encryptionItem = [%c(SettingsItem) itemWithTitle:@"Disable Encryption" value:(GetPrefBool(@"DisableEncryption") ? @"Enabled" : @"Disabled") type:1];
+					SettingsItem *encryptionItem = [%c(SettingsItem) itemWithTitle:@"Disable Encryption" value:(GetPrefBool(@"DisableEncryption") ? @"Enabled" : @"Disabled") type:1];
 					encryptionItem.ReBoom_PrefValue = @"DisableEncryption";
 					return encryptionItem;
+				} default: {
+					return [%c(SettingsItem) itemWithTitle:@"ReBoom" value:@"Error" type:1];
+				}
+			}
+		} case 4: {
+			switch (indexPath.row) {
+				case 0: {
+					discordItem = [%c(SettingsItem) itemWithTitle:@"Join the discord" value:@"" type:1];
+					return discordItem;
 				} default: {
 					return [%c(SettingsItem) itemWithTitle:@"ReBoom" value:@"Error" type:1];
 				}
@@ -831,7 +836,7 @@ SettingsItem *levelURLItem;
 // Add our custom property
 %property (strong) NSString *ReBoom_PrefValue;
 -(void)unselected {
-	// If it is one of our buttons
+	// If it is one of our options
 	if (self.ReBoom_PrefValue) {
 		if ([[[self valueForKey:@"valueLabel"] valueForKey:@"string_"] isEqualToString:@"Enabled"]) {
 			SetPrefBool(self.ReBoom_PrefValue, NO);
@@ -854,53 +859,22 @@ SettingsItem *levelURLItem;
 		alertView.style = 1; // style with textfield
 		alertView.inputTextField.placeholder = @"Leave blank to disable";
 		[alertView show];
+	} else if (self == discordItem) {
+		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://discord.gg/wgrbBPvrQ7"] options:@{} completionHandler:nil];
 	}
 	%orig;
 }
 %end
 
-
-
-// /* hacky ass fix for some random ass bug that only affects one device... */
-// nvm i've just removed it for now lol
-
-// bool firstFooter = false;
-// bool secondFooter = false;
-// bool thirdFooter = false;
-// bool fourthFooter = false;
-
-int currentLabel = 0;
 // Custom settings footers
+// almost definitely a better way to do this, but it works
 %hook HSLabelSafeBMFont
 -(void)setString:(NSString *)string updateLabel:(BOOL)update {
 	if ([string hasPrefix:@"Boom! version "]) {
-		string = @""; // todo: not this
-
-		// good way
-		NSArray *customLabels = @[@"Miscellaneous", @"TAS Tools", @"Development Options", @"ReBoom by @iCrazeiOS"];
-		string = ((currentLabel < [customLabels count]) ? customLabels[currentLabel] : @"");
-		currentLabel++;
-
-
-		// bad way (but doesnt crash for llsc...)
-		// if (!firstFooter) {
-		// 	firstFooter = true;
-		// 	string = @"Miscellaneous";
-		// } else if (!secondFooter) {
-		// 	secondFooter = true;
-		// 	string = @"TAS Tools";
-		// } else if (!thirdFooter) {
-		// 	thirdFooter = true;
-		// 	string = @"Development Options";
-		// } else if (!fourthFooter) {
-		// 	fourthFooter = true;
-		// 	string = @"ReBoom by @iCrazeiOS";
-
-		// 	fourthFooter = false;
-		// 	thirdFooter = false;
-		// 	secondFooter = false;
-		// 	firstFooter = false;
-		// }
+		string = @"";
+		NSArray *customLabels = @[@"Miscellaneous", @"TAS Tools", @"Development Options", @"ReBoom by @iCrazeiOS\nThanks to Banana, Mac & lachylegend", @"ReBoom v1.0"];
+		string = ((currentHeaderLabel < [customLabels count]) ? customLabels[currentHeaderLabel] : @"");
+		currentHeaderLabel++;
 	}
 	%orig(string, update);
 }
@@ -950,8 +924,7 @@ int currentLabel = 0;
 	UIKeyCommand *downArrowKeyCommand = [UIKeyCommand keyCommandWithInput:UIKeyInputDownArrow modifierFlags:0 action:@selector(hardwareKeyboardDownArrowPressed)]; // down arrow to stop
 	UIKeyCommand *escapeKeyCommand = [UIKeyCommand keyCommandWithInput:UIKeyInputEscape modifierFlags:0 action:@selector(hardwareKeyboardEscapePressed)]; // escape to pause
 	UIKeyCommand *RKeyCommand = [UIKeyCommand keyCommandWithInput:@"r" modifierFlags:0 action:@selector(hardwareKeyboardRKeyPressed)]; // R key to restart
-	UIKeyCommand *FKeyCommand = [UIKeyCommand keyCommandWithInput:@"f" modifierFlags:0 action:@selector(showFlex)]; // temp dev bind
-	return @[leftArrowKeyCommand, rightArrowKeyCommand, downArrowKeyCommand, escapeKeyCommand, RKeyCommand, FKeyCommand];
+	return @[leftArrowKeyCommand, rightArrowKeyCommand, downArrowKeyCommand, escapeKeyCommand, RKeyCommand];
 }
 
 // we need this to make the key listeners work
@@ -995,13 +968,7 @@ int currentLabel = 0;
 -(void)hardwareKeyboardRKeyPressed { // R key to restart
 	[[%c(TrialSession) currentSession] restartLevel];
 }
-
-%new
--(void)showFlex { // temp dev bind
-	[[%c(FLEXManager) sharedManager] toggleExplorer];
-}
 %end
-
 
 
 
