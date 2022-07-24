@@ -112,14 +112,7 @@ void loadReplay(NSString *name) {
 			[strBuffer setString:@""];
 			NSArray *commands = [sides[1] componentsSeparatedByString:@" "];
 			for (int ii = 0; ii < [commands count]; ii++) {
-				if ([commands[ii] length] > 1) {
-					if ([commands[ii] isEqual:@"rd"]) [strBuffer appendString:@"r"];
-					else if ([commands[ii] isEqual:@"ru"]) [strBuffer appendString:@"R"];
-					else if ([commands[ii] isEqual:@"ld"]) [strBuffer appendString:@"l"];
-					else if ([commands[ii] isEqual:@"lu"]) [strBuffer appendString:@"L"];
-					else if ([commands[ii] isEqual:@"**"]) [strBuffer appendString:@"*"];
-					else if ([commands[ii] isEqual:@"--"]) [strBuffer appendString:@"-"];
-				}
+				[strBuffer appendString:commands[ii]];
 			}
 
 			for (int ii = tas.length; ii < frame - 1; ii++) [tas.commands addObject:strEmpty];
@@ -156,6 +149,7 @@ void removeGhost(NSString *levelId) {
 }
 %end
 
+/* this next bit is UGLY, but what can you do? */
 %hook Wheely
 -(void)update:(float)update {
 	GetPrefBool(@"FixedDelta") ? %orig(FIXED_DELTA) : %orig;
@@ -403,6 +397,7 @@ void removeGhost(NSString *levelId) {
 	if (challenge != NULL || tournament != NULL) return %orig;
 
 	NSString *customLevelURL = getLevelURL();
+	// switch to custom level url if string is not empty
 	if (![customLevelURL isEqualToString:@""]) {
 		level = [NSMutableDictionary dictionaryWithDictionary:level];
 		level[@"url"] = customLevelURL;
@@ -411,14 +406,14 @@ void removeGhost(NSString *levelId) {
 	return %orig(level, challenge, tournament);
 }
 
--(void)showTutorial {
+-(void)showTutorial { // disable tutorials
 	if (!GetPrefBool(@"DisableTutorials")) %orig;
 }
 
--(void)pauseSchedulerAndActionsRecursive:(id)a {
+-(void)pauseSchedulerAndActionsRecursive:(id)recursive {
 	if (!GetPrefBool(@"PauseBug")) %orig; 
 }
--(void)resumeSchedulerAndActionsRecursive:(id)a {
+-(void)resumeSchedulerAndActionsRecursive:(id)recursive {
 	if (!GetPrefBool(@"PauseBug")) %orig; 
 }
 
@@ -469,26 +464,10 @@ void removeGhost(NSString *levelId) {
 			const NSString *list = tas.commands[frameID];
 			
 			for (int i = 0; i < [list length]; i++) {
-				switch([list characterAtIndex:i]) {
-					case 'r': {
-						[self right];
-						break;
-					} case 'R': {
-						[self stopRight];
-						break;
-					} case 'l': {
-						[self left];
-						break;
-					} case 'L': {
-						[self stopLeft];
-						break;
-					} case '*': {
-						[self pause];
-						break;
-					} case '-': {
-						[self resume];
-						break;
-					}
+				NSDictionary *selectors = @{@"r": @"right", @"R": @"stopRight", @"l": @"left", @"L": @"stopLeft", @"*": @"pause", @"-": @"resume"};
+				NSString *characterAsNSString = [NSString stringWithFormat:@"%C", [list characterAtIndex:i]];
+				if ([[selectors allKeys] containsObject:characterAsNSString]) {
+					[self performSelector:NSSelectorFromString([selectors valueForKey:characterAsNSString])];
 				}
 			}
 		}
@@ -528,7 +507,7 @@ void removeGhost(NSString *levelId) {
 			lastFrameID = frameID + 1;
 		}
 
-		[recording appendString:@" rd"];
+		[recording appendString:@" r"];
 	}
 }
 
@@ -543,7 +522,7 @@ void removeGhost(NSString *levelId) {
 			lastFrameID = frameID + 1;
 		}
 
-		[recording appendString:@" ld"];
+		[recording appendString:@" l"];
 	}
 }
 
@@ -558,7 +537,7 @@ void removeGhost(NSString *levelId) {
 				lastFrameID = frameID + 1;
 			}
 
-			[recording appendString:@" ru"];
+			[recording appendString:@" R"];
 	}
 }
 
@@ -573,7 +552,7 @@ void removeGhost(NSString *levelId) {
 				lastFrameID = frameID + 1;
 			}
 
-			[recording appendString:@" lu"];
+			[recording appendString:@" L"];
 	}
 }
 
@@ -588,7 +567,7 @@ void removeGhost(NSString *levelId) {
 				lastFrameID = frameID + 1;
 			}
 
-			[recording appendString:@" **"];
+			[recording appendString:@" *"];
 	}
 }
 
@@ -603,7 +582,7 @@ void removeGhost(NSString *levelId) {
 				lastFrameID = frameID + 1;
 			}
 
-			[recording appendString:@" --"];
+			[recording appendString:@" -"];
 	}
 }
 %end
