@@ -1,7 +1,7 @@
 Package: com.icraze.reboom
 Name: ReBoom
 Depends: mobilesubstrate
-Version: 1.3
+Version: 1.0
 Architecture: iphoneos-arm
 Description: Modding and other goodies for "Boom!"
 Maintainer: iCraze
