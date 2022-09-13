@@ -13,20 +13,20 @@ ReBoom adds new functionality and fixes to the game.
 - Keyboard controls (for iPads & Apple Silicon Macs)
 - Easy way to reset a level's ghost
 - 'Unpatch' the pause bug
-- Disables iCloud/Game Centre connectivity
+- Disables iCloud/Game Center connectivity
 - Replaces in-app purchase functionality (now just gives you coins)
 - Custom options within the game's settings menu
 
-#### Installation:
-- **With a jailbreak:**
+### Installation:
+#### **With a jailbreak:**
 
 	Step 1) Install **Boom!** (either from the App Store, or by using **Vanilla.ipa** from this repo)
 
 	Step 2) Install **ReBoom** from [My Boom Repo](https://boom.icrazeios.com/)
 
 	Step 3) (Optional) Install **Boom Fullscreen Patch** from the same repo. This will add support for the screen resolution of newer iOS devices.
-  
-- **Without a jailbreak:**
+
+#### **Without a jailbreak:**
 	- NOTE: *There are a few ways to install ReBoom without a jailbreak, but I will only be covering **Sideloadly**/**Jailbreaks.app**. If you know how to use other methods, such as AltStore, feel free. Just make sure that you do not change the bundle ID of the app.
 	- **Method one (Jailbreaks.app):**
 		- This method is the easiest, and does not require a computer. Downside is that it will not always work, as Apple try their best to stop third party app distribution. Any error during this process likely means that Apple has temporarily broken the website.
