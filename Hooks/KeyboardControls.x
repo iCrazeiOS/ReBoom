@@ -1,3 +1,8 @@
+/*
+	Adds keyboard support for people playing the game on Apple Silicon Macs.
+	Should also support iPads with keyboards connected, but I don't have one to test with.
+*/
+
 #import "Headers/KeyboardControls.h"
 
 // Add key press listener to CustomSettingsViewController

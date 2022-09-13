@@ -1,6 +1,9 @@
+/*
+    Allows a user to hold down on a level sign for 3 seconds to reset their ghost for that level.
+*/
+
 #import "Headers/GhostReset.h"
 
-// Hold down on the Level Sign (for 3 seconds) to reset ghost
 %hook LevelSign
 %property(nonatomic, assign) int selected_time;
 -(void)selected {

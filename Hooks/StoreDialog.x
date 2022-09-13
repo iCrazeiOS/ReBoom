@@ -1,3 +1,8 @@
+/*
+	As the game is no longer on the App Store, the in-app purchase no longer work.
+	This replaces the functionality of the 'buy coins' button, and just gives you 10,000 coins.
+*/
+
 #import "Headers/StoreDialog.h"
 
 // Replace functionality of "buy coins" button

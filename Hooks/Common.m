@@ -1,3 +1,7 @@
+/*
+	Some common functions used by the rest of the tweak.
+*/
+
 #import "Headers/Common.h"
 
 // Get pref value

@@ -1,3 +1,7 @@
+/*
+	Disables iCloud / Game Center integration.
+*/
+
 #import "Headers/Common.h"
 
 // disable iCloud

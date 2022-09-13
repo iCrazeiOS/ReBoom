@@ -1,3 +1,7 @@
+/*
+    Makes the game connect to the custom server, as the original server is dead.
+*/
+
 #import "Headers/Common.h"
 #define SERVER_HOST @"https://boom.markstam.eu"
 

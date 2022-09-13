@@ -1,3 +1,10 @@
+/*
+	'Unpatch' the 'Pause Bug'.
+	It can be used to skip parts of certain levels.
+
+	Read more about the bug here: https://boomhappysprites.fandom.com/wiki/The_Pause_Bug
+*/
+
 #import "Headers/Common.h"
 
 %hook TrialSession

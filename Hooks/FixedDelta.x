@@ -1,3 +1,8 @@
+/*
+	Ensures the game runs at a constant FPS.
+	Helps keep TAS recordings accurate.
+*/
+
 #import <Foundation/Foundation.h>
 #define FIXED_DELTA (1.0f / 60.0f)
 
