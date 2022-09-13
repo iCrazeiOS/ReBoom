@@ -58,3 +58,7 @@ Step 4) Download the latest file from the **packages** folder of this repo. Open
 Step 5) Make sure your device is selected at the top of Sideloadly, click Start, and enter your Apple ID details if prompted. This is completely safe, your account is only used to sign the application.
 
 Step 6) If all goes well, you should be able to launch **Boom!** from your homescreen.
+
+## Contact
+
+Find me in the [**Boom!** Discord server](https://discord.gg/wgrbBPvrQ7) (iCraze#3017).
