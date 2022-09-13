@@ -28,7 +28,9 @@ ReBoom adds new functionality and fixes to the game.
 
 - **Without a jailbreak:**
 	*There are a few ways to install ReBoom without a jailbreak, but I will only be covering **Sideloadly**/**Jailbreaks.app**. If you know how to use other methods, such as AltStore, feel free. Just make sure that you do not change the bundle ID of the app.*
-	- **Method one (Jailbreaks.app):**
+	
+  
+  **Method one (Jailbreaks.app):**
 		- This method is the easiest, and does not require a computer. Downside is that it will not always work, as Apple try their best to stop third party app distribution. Any error during this process likely means that Apple has temporarily broken the website.
 		
     - Step 1) Visit **https://jailbreaks.app** on your iOS device.
@@ -43,7 +45,7 @@ ReBoom adds new functionality and fixes to the game.
 
     - Step 6) Once you have trusted it, you should be able to launch **Boom!** from your homescreen.
 
-	- **Method two (Sideloadly):**
+	**Method two (Sideloadly):**
 
     - Step 1) Install & launch [**Sideloadly**](https://sideloadly.io/#download) on your computer.
 
