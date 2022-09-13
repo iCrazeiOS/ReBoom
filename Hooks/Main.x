@@ -26,20 +26,16 @@ void loadReplay(NSString *name) {
 	NSString *fileContent = [[NSString alloc] initWithContentsOfFile:path encoding:NSUTF8StringEncoding error:nil];
 	NSArray *lines = [fileContent componentsSeparatedByString:@"\n"];
 
-	// static NSString *strEmpty = [NSString string];
 	NSMutableString *strBuffer = [NSMutableString string];
 
 	for (int i = 0; i < [lines count]; i++) {
-		if (![lines[i] isEqual:@""] && ![[lines[i] substringWithRange:NSMakeRange(0, 1)] isEqual:@"#"]) {
+		if (![lines[i] isEqualToString:@""]) {
 			NSArray *sides = [lines[i] componentsSeparatedByString:@":"];
 			int frame = [sides[0] intValue];
 
 			[strBuffer setString:@""];
 			NSArray *commands = [sides[1] componentsSeparatedByString:@" "];
-			for (int ii = 0; ii < [commands count]; ii++) {
-				[strBuffer appendString:commands[ii]];
-			}
-
+			for (int ii = 0; ii < [commands count]; ii++) [strBuffer appendString:commands[ii]];
 			for (int ii = tas.length; ii < frame - 1; ii++) [tas.commands addObject:[NSString string]];
 
 			[tas.commands addObject:[NSString stringWithString:strBuffer]];
@@ -51,7 +47,7 @@ void loadReplay(NSString *name) {
 // TAS, Unlocks, Pause Bug, Disable Tutorials
 %hook TrialSession
 -(id)initWithLevel:(id)level challenge:(id)challenge tournament:(id)tournament {
-	if (challenge != NULL || tournament != NULL) return %orig;
+	if (challenge || tournament) return %orig;
 
 	NSString *customLevelURL = getLevelURL();
 	// switch to custom level url if string is not empty
@@ -115,8 +111,8 @@ void loadReplay(NSString *name) {
 
 	// record mode
 	if (getPrefBool(@"RecordMode")) {
-		if (recording == NULL) recording = [[NSMutableString alloc] init];
-		else [recording setString:@""];
+		if (recording) [recording setString:@""];
+		else recording = [[NSMutableString alloc] init];
 	}
 
 	frameID = 0;
@@ -146,7 +142,7 @@ void loadReplay(NSString *name) {
 // on level completion
 -(void)goal:(float)goal {
 	if (LOGS_ENABLED) NSLog(@"[TrialSession goal] called");
-	if (getPrefBool(@"RecordMode") && recording != NULL && ![recording isEqual:@""]) {
+	if (getPrefBool(@"RecordMode") && recording && ![recording isEqualToString:@""]) {
 		if (LOGS_ENABLED) NSLog(@"[TrialSession goal] asking to save...");
 		
 		HSAlertView *delegate = [[%c(HSAlertView) alloc] init];
@@ -166,7 +162,7 @@ void loadReplay(NSString *name) {
 // when player taps right
 -(void)right {
 	%orig;
-	if (getPrefBool(@"RecordMode") && recording != NULL) {
+	if (getPrefBool(@"RecordMode") && recording) {
 		if (LOGS_ENABLED) NSLog(@"[TrialSession right] called with record mode on");
 		if (lastFrameID < frameID + 1) {
 			if (LOGS_ENABLED) NSLog(@"[TrialSession right] appending");
@@ -181,7 +177,7 @@ void loadReplay(NSString *name) {
 // when player taps left
 -(void)left {
 	%orig;
-	if (getPrefBool(@"RecordMode") && recording != NULL) {
+	if (getPrefBool(@"RecordMode") && recording) {
 		if (LOGS_ENABLED) NSLog(@"[TrialSession left] called with record mode on");
 		if (lastFrameID < frameID + 1) {
 			if (LOGS_ENABLED) NSLog(@"[TrialSession left] appending");
@@ -196,7 +192,7 @@ void loadReplay(NSString *name) {
 // when player releases right
 -(void)stopRight {
 	%orig;
-	if (getPrefBool(@"RecordMode") && recording != NULL) {
+	if (getPrefBool(@"RecordMode") && recording) {
 		if (LOGS_ENABLED) NSLog(@"[TrialSession stopRight] called with record mode on");
 		if (lastFrameID < frameID + 1) {
 			if (LOGS_ENABLED) NSLog(@"[TrialSession stopRight] appending");
@@ -211,7 +207,7 @@ void loadReplay(NSString *name) {
 // when player releases left
 -(void)stopLeft {
 	%orig;
-	if (getPrefBool(@"RecordMode") && recording != NULL) {
+	if (getPrefBool(@"RecordMode") && recording) {
 		if (LOGS_ENABLED) NSLog(@"[TrialSession stopLeft] called with record mode on");
 		if (lastFrameID < frameID + 1) {
 			if (LOGS_ENABLED) NSLog(@"[TrialSession stopLeft] appending");
@@ -226,7 +222,7 @@ void loadReplay(NSString *name) {
 // when player presses pause
 -(void)pause {
 	%orig;
-	if (getPrefBool(@"RecordMode") && recording != NULL) {
+	if (getPrefBool(@"RecordMode") && recording) {
 		if (LOGS_ENABLED) NSLog(@"[TrialSession pause] called with record mode on");
 		if (lastFrameID < frameID + 1) {
 			if (LOGS_ENABLED) NSLog(@"[TrialSession pause] appending");
@@ -241,7 +237,7 @@ void loadReplay(NSString *name) {
 // when player resumes the game
 -(void)resume {
 	%orig;
-	if (getPrefBool(@"RecordMode") && recording != NULL) {
+	if (getPrefBool(@"RecordMode") && recording) {
 		if (LOGS_ENABLED) NSLog(@"[TrialSession resume] called with record mode on");
 		if (lastFrameID < frameID + 1) {
 			if (LOGS_ENABLED) NSLog(@"[TrialSession resume] appending");
