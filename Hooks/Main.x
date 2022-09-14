@@ -92,10 +92,10 @@ void loadReplay(NSString *name) {
 	if (getPrefBool(@"EverythingUnlocked")) [[%c(LevelHandler) sharedInstance] unLockNextLevel];
 
 	// replay mode
-	if (getPrefBool(@"TASMode") && ![self isChallenge] && ![self isTournament]) loadReplay([self levelId]);
+	if (getPrefBool(@"TASMode") && ![self isChallenge] && ![self isTournament] && [getLevelURL() isEqualToString:@""]) loadReplay([self levelId]);
 
 	// record mode
-	if (getPrefBool(@"RecordMode")) {
+	if (getPrefBool(@"RecordMode") && ![self isChallenge] && ![self isTournament] && [getLevelURL() isEqualToString:@""]) {
 		if (recording) [recording setString:@""];
 		else recording = [[NSMutableString alloc] init];
 	}
@@ -269,7 +269,7 @@ int currentHeaderLabel = 0;
 			levelURLItem = [%c(SettingsItem) itemWithTitle:@"Custom Level" value:[getLevelURL() isEqualToString:@""] ? @"Unset" : @"Set" type:1];
 			return levelURLItem;
 		} else if ([((CCLabelTTF *)[orig valueForKey:@"titleLabel"]).string containsString:@"iCloud"]) { // modify the twitter button
-			repoItem = [%c(SettingsItem) itemWithTitle:@"Browse Level Repository" value:@"" type:1];
+			repoItem = [%c(SettingsItem) itemWithTitle:@"Browse Levels" value:@"" type:1];
 			return repoItem;
 		}
 	}
