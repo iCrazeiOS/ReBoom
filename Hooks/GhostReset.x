@@ -1,5 +1,5 @@
 /*
-    Allows a user to hold down on a level sign for 3 seconds to reset their ghost for that level.
+	Allows a user to hold down on a level sign for 3 seconds to reset their ghost for that level.
 */
 
 #import "Headers/GhostReset.h"
@@ -25,12 +25,12 @@
 -(void)alertView:(HSAlertView *)view clickedButtonAtIndex:(int)index {
 	%orig;
 	if ([view.title isEqualToString:@"Remove Ghost?"] && index == 0) {
-        NSArray *paths = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES);
-        NSString *applicationSupportDirectory = [paths firstObject];
-        NSString *ghostPath = [NSString stringWithFormat:@"%@/%@.ghost", applicationSupportDirectory, [[%c(TrialSession) currentSession] levelId]];
-        [[NSFileManager defaultManager] removeItemAtPath:ghostPath error:nil];
+		NSArray *paths = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES);
+		NSString *applicationSupportDirectory = [paths firstObject];
+		NSString *ghostPath = [NSString stringWithFormat:@"%@/%@.ghost", applicationSupportDirectory, [[%c(TrialSession) currentSession] levelId]];
+		[[NSFileManager defaultManager] removeItemAtPath:ghostPath error:nil];
 		[[%c(TrialSession) currentSession] quit];
-    }
+	}
 }
 %end
 

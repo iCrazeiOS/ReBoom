@@ -1,6 +1,6 @@
 /*
-    Adds a table view to CustomNavigationViewController.
-    Used to display the list of available custom levels.
+	Adds a table view to CustomNavigationViewController.
+	Used to display the list of available custom levels.
 */
 
 #import "Headers/Main.h"
@@ -17,8 +17,7 @@
 		if (json) {
 			// sort the levels by name
 			self.customLevels = [(NSArray *)json sortedArrayUsingDescriptors:[NSArray arrayWithObject:[[NSSortDescriptor alloc] initWithKey:@"display_name" ascending:YES]]];
-		}
-        else self.customLevels = @[@{@"display_name": @"Error", @"author": @"Could not parse JSON", @"filename": @""}];
+		} else self.customLevels = @[@{@"display_name": @"Error", @"author": @"Could not parse JSON", @"filename": @""}];
 	} else self.customLevels = @[@{@"display_name": @"Error", @"author": @"Could not fetch JSON", @"filename": @""}];
 }
 
@@ -38,11 +37,11 @@
 
 %new
 -(void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    self.selectedCustomLevel = self.customLevels[indexPath.row];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.1 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-        [tableView deselectRowAtIndexPath:indexPath animated:YES];
-	    [tableView removeFromSuperview];
-    });
+	self.selectedCustomLevel = self.customLevels[indexPath.row];
+	dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.1 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+		[tableView deselectRowAtIndexPath:indexPath animated:YES];
+		[tableView removeFromSuperview];
+	});
 }
 %end
 

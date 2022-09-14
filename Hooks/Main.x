@@ -233,7 +233,7 @@ void loadReplay(NSString *name) {
 
 
 
-/*  IN-GAME PREFS */
+/* IN-GAME PREFS */
 
 SettingsItem *replayItem, *recordItem, *levelURLItem, *repoItem, *discordItem;
 int currentHeaderLabel = 0;
@@ -350,7 +350,7 @@ int currentHeaderLabel = 0;
 			}
 		}
 	} else if (self == levelURLItem) {
-		HSAlertView *alertView = [[%c(HSAlertView) alloc] initWithTitle:@"Custom Level URL"  message:nil delegate:[[%c(HSAlertView) alloc] init] cancelButtonTitle:@"Cancel" otherButtonTitles:@"Save", nil];
+		HSAlertView *alertView = [[%c(HSAlertView) alloc] initWithTitle:@"Custom Level URL" message:nil delegate:[[%c(HSAlertView) alloc] init] cancelButtonTitle:@"Cancel" otherButtonTitles:@"Save", nil];
 		alertView.style = 1; // style with textfield
 		alertView.inputTextField.placeholder = @"Leave blank to disable";
 		[alertView show];
@@ -406,7 +406,7 @@ int currentHeaderLabel = 0;
 	%orig;
 	NSString *customName = nil;
 	if ([view.title isEqualToString:@"ReBoom"] && index == 1) { // only matches the "save TAS" alert
-		// save TAS recording to file   ( Boom/Documents/{levelID}.btas )
+		// save TAS recording to file ( Boom/Documents/{levelID}.btas )
 		NSURL *path = [NSURL URLWithString: [NSString stringWithFormat:@"%@%@%@", [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] firstObject], [[%c(TrialSession) currentSession] levelId], TAS_EXT]];
 		[recording writeToURL:path atomically:NO encoding:NSASCIIStringEncoding error:NULL];
 		showAlert(@"TAS recording has been saved!", @"Dismiss");

@@ -1,5 +1,5 @@
 /*
-    Makes the game connect to the custom server, as the original server is dead.
+	Makes the game connect to the custom server, as the original server is dead.
 */
 
 #import "Headers/Common.h"
@@ -7,25 +7,25 @@
 
 %hook Player
 +(void)setHost:(id)host {
-    %orig(SERVER_HOST);
+	%orig(SERVER_HOST);
 }
 %end
 
 %hook HSGameConfiguration
 +(void)setHost:(id)host {
-    %orig(SERVER_HOST);
+	%orig(SERVER_HOST);
 }
 %end
 
 %hook HSNews
 +(void)setHost:(id)host {
-    %orig(SERVER_HOST);
+	%orig(SERVER_HOST);
 }
 %end
 
 %hook ChallengeClient
 +(void)setHost:(id)host {
-    %orig(SERVER_HOST);
+	%orig(SERVER_HOST);
 }
 %end
 
