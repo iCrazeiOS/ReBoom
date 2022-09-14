@@ -267,11 +267,8 @@ int currentHeaderLabel = 0;
 		// Check title of button, as its index may vary
 		if ([((CCLabelTTF *)[orig valueForKey:@"titleLabel"]).string containsString:@"Facebook"]) { // modify the facebook button
 			levelURLItem = [%c(SettingsItem) itemWithTitle:@"Custom Level" value:[getLevelURL() isEqualToString:@""] ? @"Unset" : @"Set" type:1];
+			[levelURLItem setIcon:[%c(HSAdjustedSprite) spriteWithSpriteFrameName:@"ui-icon-settings-icloud-sync.png"]];
 			return levelURLItem;
-		} else if ([((CCLabelTTF *)[orig valueForKey:@"titleLabel"]).string containsString:@"iCloud"]) { // modify the twitter button
-			repoItem = [%c(SettingsItem) itemWithTitle:@"Browse Levels" value:@"" type:1];
-			[repoItem setIcon:[%c(HSAdjustedSprite) spriteWithSpriteFrameName:@"ui-icon-settings-icloud-sync.png"]];
-			return repoItem;
 		}
 	}
 	// Loop through our custom sections
@@ -354,31 +351,10 @@ int currentHeaderLabel = 0;
 			}
 		}
 	} else if (self == levelURLItem) {
-		HSAlertView *alertView = [[%c(HSAlertView) alloc] initWithTitle:@"Custom Level URL" message:nil delegate:[[%c(HSAlertView) alloc] init] cancelButtonTitle:@"Cancel" otherButtonTitles:@"Save", nil];
+		HSAlertView *alertView = [[%c(HSAlertView) alloc] initWithTitle:@"Custom Level URL" message:nil delegate:[[%c(HSAlertView) alloc] init] cancelButtonTitle:@"Cancel" otherButtonTitles:@"Save", @"Browse", nil];
 		alertView.style = 1; // style with textfield
 		alertView.inputTextField.placeholder = @"Leave blank to disable";
 		[alertView show];
-	} else if (self == repoItem) {
-		UIViewController *gameVC = [[[UIApplication sharedApplication] keyWindow] rootViewController];
-		if ([gameVC isKindOfClass:objc_getClass("CustomNavigationViewController")]) {
-			CustomNavigationViewController *vc = (CustomNavigationViewController *)gameVC;
-			UITableView *tableView = [[UITableView alloc] initWithFrame:[[UIScreen mainScreen] bounds] style:0];
-			tableView.delegate = vc;
-			tableView.dataSource = vc;
-			[gameVC.view addSubview:tableView];
-
-			// probably a much better way to do this but it's 3am and i can't think of it
-			dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{ // background thread so it doesn't block the main thread
-				while (!vc.selectedCustomLevel) usleep(100000); // wait until not nil
-				dispatch_async(dispatch_get_main_queue(), ^{ // go back to the main thread
-					NSUserDefaults *preferences = [[NSUserDefaults alloc] initWithSuiteName:DEFAULTS_NAME];
-					[preferences setObject:[NSString stringWithFormat:@"https://raw.githubusercontent.com/iCrazeiOS/ReBoom-Levels/main/Levels/%@.plhs", vc.selectedCustomLevel[@"filename"]] forKey:@"CustomLevelURL"];
-					[levelURLItem setValue:vc.selectedCustomLevel[@"display_name"]]; // set button text to level name
-
-					vc.selectedCustomLevel = nil; // reset
-				});
-			});
-		}
 	} else if (self == discordItem) {
 		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://discord.gg/wgrbBPvrQ7"] options:@{} completionHandler:nil];
 	}
@@ -403,7 +379,7 @@ int currentHeaderLabel = 0;
 
 
 
-/* INFO ALERT */
+/* Handle our alert actions */
 
 %hook HSAlertView
 -(void)alertView:(HSAlertView *)view clickedButtonAtIndex:(int)index {
@@ -414,34 +390,61 @@ int currentHeaderLabel = 0;
 		NSURL *path = [NSURL URLWithString: [NSString stringWithFormat:@"%@%@%@", [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] firstObject], [[%c(TrialSession) currentSession] levelId], TAS_EXT]];
 		[recording writeToURL:path atomically:NO encoding:NSASCIIStringEncoding error:NULL];
 		showAlert(@"TAS recording has been saved!", @"Dismiss");
-	} else if ([view.title isEqualToString:@"Custom Level URL"] && index == 1) {
-		NSString *levelURL = view.inputTextField.text;
-		if (![levelURL isEqualToString:@""]) {
-			// if no protocol is specified, prepend https://
-			if (![levelURL hasPrefix:@"http"]) levelURL = [@"https://" stringByAppendingString:levelURL]; // all sites should be using https by now. many will refuse http, so I will be forcing a https prefix if no protocol is provided
+	} else if ([view.title isEqualToString:@"Custom Level URL"]) {
+		if (index == 1) {
+			NSString *levelURL = view.inputTextField.text;
+			if (![levelURL isEqualToString:@""]) {
+				// if no protocol is specified, prepend https://
+				if (![levelURL hasPrefix:@"http"]) levelURL = [@"https://" stringByAppendingString:levelURL]; // all sites should be using https by now. many will refuse http, so I will be forcing a https prefix if no protocol is provided
 
-			// verify that the URL is valid
-			NSData *data = [NSData dataWithContentsOfURL:[NSURL URLWithString:levelURL]];
-			if (data) { // url fetched successfully
-				NSDictionary *plistDict = [NSPropertyListSerialization propertyListWithData:data options:NSPropertyListImmutable format:NULL error:NULL];
-				if ([plistDict objectForKey:@"SPRITES_INFO"]) { // valid level
-					if ([plistDict objectForKey:@"CustomLevelName"]) customName = [plistDict objectForKey:@"CustomLevelName"];
-				} else { // invalid level
-					showAlert(@"Error: The URL you provided does not seem to be a valid level", @"Dismiss");
+				// verify that the URL is valid
+				NSData *data = [NSData dataWithContentsOfURL:[NSURL URLWithString:levelURL]];
+				if (data) { // url fetched successfully
+					NSDictionary *plistDict = [NSPropertyListSerialization propertyListWithData:data options:NSPropertyListImmutable format:NULL error:NULL];
+					if ([plistDict objectForKey:@"SPRITES_INFO"]) { // valid level
+						if ([plistDict objectForKey:@"CustomLevelName"]) customName = [plistDict objectForKey:@"CustomLevelName"];
+					} else { // invalid level
+						showAlert(@"Error: The URL you provided does not seem to be a valid level", @"Dismiss");
+						return;
+					}
+				} else { // failed to fetch url
+					showAlert(@"Error: The URL you provided is not a valid URL (or could not be fetched)", @"Dismiss");
 					return;
 				}
-			} else { // failed to fetch url
-				showAlert(@"Error: The URL you provided is not a valid URL (or could not be fetched)", @"Dismiss");
-				return;
 			}
+
+			// save url
+			NSUserDefaults *preferences = [[NSUserDefaults alloc] initWithSuiteName:DEFAULTS_NAME];
+			[preferences setObject:levelURL forKey:@"CustomLevelURL"];
+
+			// if empty, setvalue to 'Unset', else if custom name is set, setvalue to that, else setvalue to 'Set'
+			[levelURLItem setValue:[levelURL isEqualToString:@""] ? @"Unset" : (customName ?: @"Set")];
+		} else if (index == 2) {
+			// wait for alert to dismiss, so we can get the correct view controller
+			// 0.1 seconds should be way more than enough time
+			dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.1 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+				UIViewController *gameVC = [[[UIApplication sharedApplication] keyWindow] rootViewController];
+				if ([gameVC isKindOfClass:objc_getClass("CustomNavigationViewController")]) {
+					CustomNavigationViewController *vc = (CustomNavigationViewController *)gameVC;
+					UITableView *tableView = [[UITableView alloc] initWithFrame:[[UIScreen mainScreen] bounds] style:0];
+					tableView.delegate = vc;
+					tableView.dataSource = vc;
+					[gameVC.view addSubview:tableView];
+
+					// probably a much better way to do this but it's 3am and i can't think of it
+					dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{ // background thread so it doesn't block the main thread
+						while (!vc.selectedCustomLevel) usleep(100000); // wait until not nil
+						dispatch_async(dispatch_get_main_queue(), ^{ // go back to the main thread
+							NSUserDefaults *preferences = [[NSUserDefaults alloc] initWithSuiteName:DEFAULTS_NAME];
+							[preferences setObject:[NSString stringWithFormat:@"https://raw.githubusercontent.com/iCrazeiOS/ReBoom-Levels/main/Levels/%@.plhs", vc.selectedCustomLevel[@"filename"]] forKey:@"CustomLevelURL"];
+							[levelURLItem setValue:vc.selectedCustomLevel[@"display_name"]]; // set button text to level name
+
+							vc.selectedCustomLevel = nil; // reset
+						});
+					});
+				}
+			});
 		}
-
-		// save url
-		NSUserDefaults *preferences = [[NSUserDefaults alloc] initWithSuiteName:DEFAULTS_NAME];
-		[preferences setObject:levelURL forKey:@"CustomLevelURL"];
-
-		// if empty, setvalue to 'Unset', else if custom name is set, setvalue to that, else setvalue to 'Set'
-		[levelURLItem setValue:[levelURL isEqualToString:@""] ? @"Unset" : (customName ?: @"Set")];
 	}
 }
 %end
