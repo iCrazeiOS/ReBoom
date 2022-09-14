@@ -16,7 +16,7 @@ static BOOL LOGS_ENABLED = NO;
 -(void)left;
 -(void)stopRight;
 -(void)stopLeft;
--(void)start_reboom;
+-(void)startReBoom;
 -(BOOL)isChallenge;
 -(BOOL)isTournament;
 -(void)pause;
@@ -27,11 +27,10 @@ static BOOL LOGS_ENABLED = NO;
 @end
 
 @interface SettingsItem : UITableViewCell
-@property (readwrite, assign) NSString *ReBoom_PrefValue;
+@property (readwrite, assign) NSString *reboomValue;
 +(SettingsItem *)itemWithTitle:(NSString *)title value:(NSString *)value type:(int)type;
 -(void)setValue:(NSString *)title;
--(void)selected;
--(void)unselected;
+-(void)activate;
 @end
 
 @interface LevelHandler : NSObject
@@ -41,6 +40,11 @@ static BOOL LOGS_ENABLED = NO;
 
 @interface CCLabelTTF : NSObject
 @property (nonatomic,copy) NSString *string;
+@end
+
+@interface CustomNavigationViewController : UIViewController <UITableViewDelegate, UITableViewDataSource>
+@property (nonatomic, retain) NSArray *customLevels;
+@property (nonatomic, retain) NSDictionary *selectedCustomLevel;
 @end
 
 

@@ -12,16 +12,11 @@ NSString *getLevelURL() {
 
 // Load TAS recording
 void loadReplay(NSString *name) {
-	if (LOGS_ENABLED) NSLog(@"[ReBoom] Loading TAS recording with name: %@", name);
 	tas.length = 0;
 	tas.commands = [[NSMutableArray alloc] init];
 
 	NSString *path = [NSString stringWithFormat:@"%@/%@%@", [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] firstObject].path, name, TAS_EXT];
-	if (![[NSFileManager defaultManager] fileExistsAtPath:path]) {
-		if (LOGS_ENABLED) NSLog(@"TAS recording file not found at path: %@", path);
-		return;
-	}
-	if (LOGS_ENABLED) NSLog(@"TAS recording file found at path: %@", path);
+	if (![[NSFileManager defaultManager] fileExistsAtPath:path]) return;
 
 	NSString *fileContent = [[NSString alloc] initWithContentsOfFile:path encoding:NSUTF8StringEncoding error:nil];
 	NSArray *lines = [fileContent componentsSeparatedByString:@"\n"];
@@ -82,32 +77,22 @@ void loadReplay(NSString *name) {
 
 -(void)restartLevel {
 	%orig;
-	if (LOGS_ENABLED) NSLog(@"[ReBoom] Restarting level...");
-	[self start_reboom];
+	[self startReBoom];
 }
 
 -(void)onEnter {
 	%orig;
-	if (LOGS_ENABLED) NSLog(@"[ReBoom] Starting level...");
-	[self start_reboom];
-
-	if (getPrefBool(@"HideControls")) {
-		[[[%c(TrialSession) currentSession] hud] hideTouchControls:YES];
-	}
+	[self startReBoom];
+	if (getPrefBool(@"HideControls")) [[[%c(TrialSession) currentSession] hud] hideTouchControls:YES];
 }
 
 %new
--(void)start_reboom {
-	if (LOGS_ENABLED) NSLog(@"[ReBoom] [TrialSession start_reboom] called");
-
+-(void)startReBoom {
 	// unlock next level
 	if (getPrefBool(@"EverythingUnlocked")) [[%c(LevelHandler) sharedInstance] unLockNextLevel];
 
 	// replay mode
-	if (getPrefBool(@"TASMode") && ![self isChallenge] && ![self isTournament]) {
-		if (LOGS_ENABLED) NSLog(@"[ReBoom] [TrialSession restartLevel] loading TAS recording...");
-		loadReplay([self levelId]);
-	}
+	if (getPrefBool(@"TASMode") && ![self isChallenge] && ![self isTournament]) loadReplay([self levelId]);
 
 	// record mode
 	if (getPrefBool(@"RecordMode")) {
@@ -141,19 +126,13 @@ void loadReplay(NSString *name) {
 
 // on level completion
 -(void)goal:(float)goal {
-	if (LOGS_ENABLED) NSLog(@"[TrialSession goal] called");
 	if (getPrefBool(@"RecordMode") && recording && ![recording isEqualToString:@""]) {
-		if (LOGS_ENABLED) NSLog(@"[TrialSession goal] asking to save...");
-		
 		HSAlertView *delegate = [[%c(HSAlertView) alloc] init];
 		HSAlertView *alertView = [[%c(HSAlertView) alloc] initWithTitle:@"ReBoom" message:@"Would you like to save the TAS recording?" delegate:delegate cancelButtonTitle:@"No" otherButtonTitles:@"Yes", nil];
 		[alertView show];
 	} else if (getPrefBool(@"TASMode") && ![self isChallenge] && ![self isTournament]) {
 		NSString *path = [NSString stringWithFormat:@"%@/%@%@", [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] firstObject].path, [self levelId], TAS_EXT];
-		if ([[NSFileManager defaultManager] fileExistsAtPath:path]) {
-			if (LOGS_ENABLED) NSLog(@"[TrialSession goal] showing TAS completion alert...");
-			showAlert(@"TAS playback complete", @"Dismiss");
-		}
+		if ([[NSFileManager defaultManager] fileExistsAtPath:path]) showAlert(@"TAS playback complete", @"Dismiss");
 	}
 
 	%orig;
@@ -163,9 +142,7 @@ void loadReplay(NSString *name) {
 -(void)right {
 	%orig;
 	if (getPrefBool(@"RecordMode") && recording) {
-		if (LOGS_ENABLED) NSLog(@"[TrialSession right] called with record mode on");
 		if (lastFrameID < frameID + 1) {
-			if (LOGS_ENABLED) NSLog(@"[TrialSession right] appending");
 			[recording appendFormat:frameID == 0 ? @"%04lu :" : @"\n%04lu :", frameID + 1];
 			lastFrameID = frameID + 1;
 		}
@@ -178,9 +155,7 @@ void loadReplay(NSString *name) {
 -(void)left {
 	%orig;
 	if (getPrefBool(@"RecordMode") && recording) {
-		if (LOGS_ENABLED) NSLog(@"[TrialSession left] called with record mode on");
 		if (lastFrameID < frameID + 1) {
-			if (LOGS_ENABLED) NSLog(@"[TrialSession left] appending");
 			[recording appendFormat:frameID == 0 ? @"%04lu :" : @"\n%04lu :", frameID + 1];
 			lastFrameID = frameID + 1;
 		}
@@ -193,9 +168,7 @@ void loadReplay(NSString *name) {
 -(void)stopRight {
 	%orig;
 	if (getPrefBool(@"RecordMode") && recording) {
-		if (LOGS_ENABLED) NSLog(@"[TrialSession stopRight] called with record mode on");
 		if (lastFrameID < frameID + 1) {
-			if (LOGS_ENABLED) NSLog(@"[TrialSession stopRight] appending");
 			[recording appendFormat:frameID == 0 ? @"%04lu :" : @"\n%04lu :", frameID + 1];
 			lastFrameID = frameID + 1;
 		}
@@ -208,9 +181,7 @@ void loadReplay(NSString *name) {
 -(void)stopLeft {
 	%orig;
 	if (getPrefBool(@"RecordMode") && recording) {
-		if (LOGS_ENABLED) NSLog(@"[TrialSession stopLeft] called with record mode on");
 		if (lastFrameID < frameID + 1) {
-			if (LOGS_ENABLED) NSLog(@"[TrialSession stopLeft] appending");
 			[recording appendFormat:frameID == 0 ? @"%04lu :" : @"\n%04lu :", frameID + 1];
 			lastFrameID = frameID + 1;
 		}
@@ -223,9 +194,7 @@ void loadReplay(NSString *name) {
 -(void)pause {
 	%orig;
 	if (getPrefBool(@"RecordMode") && recording) {
-		if (LOGS_ENABLED) NSLog(@"[TrialSession pause] called with record mode on");
 		if (lastFrameID < frameID + 1) {
-			if (LOGS_ENABLED) NSLog(@"[TrialSession pause] appending");
 			[recording appendFormat:frameID == 0 ? @"%04lu :" : @"\n%04lu :", frameID + 1];
 			lastFrameID = frameID + 1;
 		}
@@ -238,9 +207,7 @@ void loadReplay(NSString *name) {
 -(void)resume {
 	%orig;
 	if (getPrefBool(@"RecordMode") && recording) {
-		if (LOGS_ENABLED) NSLog(@"[TrialSession resume] called with record mode on");
 		if (lastFrameID < frameID + 1) {
-			if (LOGS_ENABLED) NSLog(@"[TrialSession resume] appending");
 			[recording appendFormat:frameID == 0 ? @"%04lu :" : @"\n%04lu :", frameID + 1];
 			lastFrameID = frameID + 1;
 		}
@@ -312,19 +279,19 @@ int currentHeaderLabel = 0;
 			switch (indexPath.row) {
 				case 0: {
 					SettingsItem *pauseItem = [%c(SettingsItem) itemWithTitle:@"Un-patch Pause Bug" value:(getPrefBool(@"PauseBug") ? @"Enabled" : @"Disabled") type:1];
-					pauseItem.ReBoom_PrefValue = @"PauseBug";
+					pauseItem.reboomValue = @"PauseBug";
 					return pauseItem;
 				} case 1: {
 					SettingsItem *unlockItem = [%c(SettingsItem) itemWithTitle:@"Everything Unlocked" value:(getPrefBool(@"EverythingUnlocked") ? @"Enabled" : @"Disabled") type:1];
-					unlockItem.ReBoom_PrefValue = @"EverythingUnlocked";
+					unlockItem.reboomValue = @"EverythingUnlocked";
 					return unlockItem;
 				} case 2: {
 					SettingsItem *tutorialsItem = [%c(SettingsItem) itemWithTitle:@"Disable Tutorials" value:(getPrefBool(@"DisableTutorials") ? @"Enabled" : @"Disabled") type:1];
-					tutorialsItem.ReBoom_PrefValue = @"DisableTutorials";
+					tutorialsItem.reboomValue = @"DisableTutorials";
 					return tutorialsItem;
 				} case 3: {
 					SettingsItem *hideControlsItem = [%c(SettingsItem) itemWithTitle:@"Hide Touch Controls" value:(getPrefBool(@"HideControls") ? @"Enabled" : @"Disabled") type:1];
-					hideControlsItem.ReBoom_PrefValue = @"HideControls";
+					hideControlsItem.reboomValue = @"HideControls";
 					return hideControlsItem;
 				} default: {
 					return [%c(SettingsItem) itemWithTitle:@"ReBoom" value:@"Error" type:1];
@@ -334,11 +301,11 @@ int currentHeaderLabel = 0;
 			switch (indexPath.row) {
 				case 0: {
 					replayItem = [%c(SettingsItem) itemWithTitle:@"Replay Mode" value:(getPrefBool(@"TASMode") ? @"Enabled" : @"Disabled") type:1];
-					replayItem.ReBoom_PrefValue = @"TASMode";
+					replayItem.reboomValue = @"TASMode";
 					return replayItem;
 				} case 1: {
 					recordItem = [%c(SettingsItem) itemWithTitle:@"Record Mode" value:(getPrefBool(@"RecordMode") ? @"Enabled" : @"Disabled") type:1];
-					recordItem.ReBoom_PrefValue = @"RecordMode";
+					recordItem.reboomValue = @"RecordMode";
 					return recordItem;
 				} default: {
 					return [%c(SettingsItem) itemWithTitle:@"ReBoom" value:@"Error" type:1];
@@ -364,24 +331,22 @@ int currentHeaderLabel = 0;
 
 %hook SettingsItem
 // Add our custom property
-%property (strong) NSString *ReBoom_PrefValue;
--(void)unselected {
+%property (strong) NSString *reboomValue;
+-(void)activate {
 	// If it is one of our options
-	if (self.ReBoom_PrefValue) {
+	if (self.reboomValue) {
 		if ([[[self valueForKey:@"valueLabel"] valueForKey:@"string_"] isEqualToString:@"Enabled"]) {
-			setPrefBool(self.ReBoom_PrefValue, NO);
+			setPrefBool(self.reboomValue, NO);
 			[self setValue:@"Disabled"];
 		} else {
-			setPrefBool(self.ReBoom_PrefValue, YES);
+			setPrefBool(self.reboomValue, YES);
 			[self setValue:@"Enabled"];
 
 			// Make the replay mode button and record mode button conflict (so you can only have one enabled at once)
 			if (self == replayItem && [[[recordItem valueForKey:@"valueLabel"] valueForKey:@"string_"] isEqualToString:@"Enabled"]) {
-				[recordItem selected];
-				[recordItem unselected];
+				[recordItem activate];
 			} else if (self == recordItem && [[[replayItem valueForKey:@"valueLabel"] valueForKey:@"string_"] isEqualToString:@"Enabled"]) {
-				[replayItem selected];
-				[replayItem unselected];
+				[replayItem activate];
 			}
 		}
 	} else if (self == levelURLItem) {
@@ -390,8 +355,26 @@ int currentHeaderLabel = 0;
 		alertView.inputTextField.placeholder = @"Leave blank to disable";
 		[alertView show];
 	} else if (self == repoItem) {
-		os_log(OS_LOG_DEFAULT, "[ReBoom] Opening repo");
-		// to do: stuff
+		UIViewController *gameVC = [[[UIApplication sharedApplication] keyWindow] rootViewController];
+		if ([gameVC isKindOfClass:objc_getClass("CustomNavigationViewController")]) {
+			CustomNavigationViewController *vc = (CustomNavigationViewController *)gameVC;
+			UITableView *tableView = [[UITableView alloc] initWithFrame:[[UIScreen mainScreen] bounds] style:0];
+			tableView.delegate = vc;
+			tableView.dataSource = vc;
+			[gameVC.view addSubview:tableView];
+
+			// probably a much better way to do this but it's 3am and i can't think of it
+			dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{ // background thread so it doesn't block the main thread
+				while (!vc.selectedCustomLevel) usleep(100000); // wait until not nil
+				dispatch_async(dispatch_get_main_queue(), ^{ // go back to the main thread
+					NSUserDefaults *preferences = [[NSUserDefaults alloc] initWithSuiteName:DEFAULTS_NAME];
+					[preferences setObject:[NSString stringWithFormat:@"https://raw.githubusercontent.com/iCrazeiOS/ReBoom-Levels/main/Levels/%@.plhs", vc.selectedCustomLevel[@"filename"]] forKey:@"CustomLevelURL"];
+					[levelURLItem setValue:vc.selectedCustomLevel[@"display_name"]]; // set button text to level name
+
+					vc.selectedCustomLevel = nil; // reset
+				});
+			});
+		}
 	} else if (self == discordItem) {
 		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://discord.gg/wgrbBPvrQ7"] options:@{} completionHandler:nil];
 	}
@@ -426,7 +409,6 @@ int currentHeaderLabel = 0;
 		// save TAS recording to file   ( Boom/Documents/{levelID}.btas )
 		NSURL *path = [NSURL URLWithString: [NSString stringWithFormat:@"%@%@%@", [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] firstObject], [[%c(TrialSession) currentSession] levelId], TAS_EXT]];
 		[recording writeToURL:path atomically:NO encoding:NSASCIIStringEncoding error:NULL];
-		if (LOGS_ENABLED) NSLog(@"Saved to %@!", path);
 		showAlert(@"TAS recording has been saved!", @"Dismiss");
 	} else if ([view.title isEqualToString:@"Custom Level URL"] && index == 1) {
 		NSString *levelURL = view.inputTextField.text;
@@ -439,7 +421,6 @@ int currentHeaderLabel = 0;
 			if (data) { // url fetched successfully
 				NSDictionary *plistDict = [NSPropertyListSerialization propertyListWithData:data options:NSPropertyListImmutable format:NULL error:NULL];
 				if ([plistDict objectForKey:@"SPRITES_INFO"]) { // valid level
-					os_log(OS_LOG_DEFAULT, "ReBoom this seems legit");
 					if ([plistDict objectForKey:@"CustomLevelName"]) customName = [plistDict objectForKey:@"CustomLevelName"];
 				} else { // invalid level
 					showAlert(@"Error: The URL you provided does not seem to be a valid level", @"Dismiss");
@@ -480,6 +461,5 @@ int currentHeaderLabel = 0;
 
 %ctor {
 	NSString *bundleID = [[NSBundle mainBundle] bundleIdentifier];
-	if (!([bundleID containsString:@"com.happysprites.boom"] || [bundleID containsString:@"eu.markstam.boomclone"])) return;
-	%init;
+	if ([bundleID containsString:@"com.happysprites.boom"] || [bundleID containsString:@"eu.markstam.boomclone"]) %init;
 }
