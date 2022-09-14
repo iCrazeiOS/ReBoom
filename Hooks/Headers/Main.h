@@ -26,11 +26,16 @@ static BOOL LOGS_ENABLED = NO;
 -(TrialHUD *)hud;
 @end
 
+@interface HSAdjustedSprite : NSObject
++(id)spriteWithSpriteFrameName:(id)spriteFrameName;
+@end
+
 @interface SettingsItem : UITableViewCell
 @property (readwrite, assign) NSString *reboomValue;
 +(SettingsItem *)itemWithTitle:(NSString *)title value:(NSString *)value type:(int)type;
 -(void)setValue:(NSString *)title;
 -(void)activate;
+-(void)setIcon:(HSAdjustedSprite *)icon;
 @end
 
 @interface LevelHandler : NSObject

@@ -270,6 +270,7 @@ int currentHeaderLabel = 0;
 			return levelURLItem;
 		} else if ([((CCLabelTTF *)[orig valueForKey:@"titleLabel"]).string containsString:@"iCloud"]) { // modify the twitter button
 			repoItem = [%c(SettingsItem) itemWithTitle:@"Browse Levels" value:@"" type:1];
+			[repoItem setIcon:[%c(HSAdjustedSprite) spriteWithSpriteFrameName:@"ui-icon-settings-icloud-sync.png"]];
 			return repoItem;
 		}
 	}
@@ -314,7 +315,10 @@ int currentHeaderLabel = 0;
 		} case 3: {
 			switch (indexPath.row) {
 				case 0: {
-					discordItem = [%c(SettingsItem) itemWithTitle:@"Join the discord" value:@"" type:1];
+					discordItem = [%c(SettingsItem) itemWithTitle:@"Join the Discord" value:@"" type:1];
+					// i've modified the game's assets and plists to include a discord icon
+					// if these are not present (not using my ipa), the icon will just be blank
+					[discordItem setIcon:[%c(HSAdjustedSprite) spriteWithSpriteFrameName:@"ui-icon-settings-custom-discord.png"]];
 					return discordItem;
 				} default: {
 					return [%c(SettingsItem) itemWithTitle:@"ReBoom" value:@"Error" type:1];
