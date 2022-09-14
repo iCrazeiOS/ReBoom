@@ -14,7 +14,10 @@
 	NSData *urlContents = [NSData dataWithContentsOfURL:[NSURL URLWithString:@"https://raw.githubusercontent.com/iCrazeiOS/ReBoom-Levels/main/Levels.json"]];
 	if (urlContents) {
 		NSJSONSerialization *json = [NSJSONSerialization JSONObjectWithData:urlContents options:0 error:nil];
-		if (json) self.customLevels = (NSArray *)json;
+		if (json) {
+			// sort the levels by name
+			self.customLevels = [(NSArray *)json sortedArrayUsingDescriptors:[NSArray arrayWithObject:[[NSSortDescriptor alloc] initWithKey:@"display_name" ascending:YES]]];
+		}
         else self.customLevels = @[@{@"display_name": @"Error", @"author": @"Could not parse JSON", @"filename": @""}];
 	} else self.customLevels = @[@{@"display_name": @"Error", @"author": @"Could not fetch JSON", @"filename": @""}];
 }
