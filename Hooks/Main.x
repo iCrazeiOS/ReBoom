@@ -1,3 +1,7 @@
+// todo
+// mem management
+// fix customlevelname stuff
+
 /*
 	Almost everything in this file is for TAS or settings.
 	All other options can be found in the Hooks directory.
@@ -235,8 +239,8 @@ void loadReplay(NSString *name) {
 
 /* IN-GAME PREFS */
 
-SettingsItem *replayItem, *recordItem, *levelURLItem, *repoItem, *discordItem;
-int currentHeaderLabel = 0;
+SettingsItem *replayItem, *recordItem, *levelURLItem, *discordItem; // special actions
+int currentHeaderLabel = 0; // used for setting custom text
 
 %hook Settings
 -(void)onExit { // resets the counter used to show custom labels
