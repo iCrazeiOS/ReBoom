@@ -292,8 +292,16 @@ int currentHeaderLabel = 0; // used for setting custom text
 					tutorialsItem.reboomValue = @"DisableTutorials";
 					return tutorialsItem;
 				} case 3: {
-					SettingsItem *hideControlsItem = [%c(SettingsItem) itemWithTitle:@"Hide Touch Controls" value:(getPrefBool(@"HideControls") ? @"Enabled" : @"Disabled") type:1];
+					// SettingsItem *hideControlsItem = [%c(SettingsItem) itemWithTitle:@"Hide Touch Controls" value:(getPrefBool(@"HideControls") ? @"Enabled" : @"Disabled") type:1];
+					// hideControlsItem.reboomValue = @"HideControls";
+					// return hideControlsItem;
+
+					SettingsItem *hideControlsItem = [%c(SettingsItem) itemWithTitle:@"Hide Touch Controls" value:nil type:0];
 					hideControlsItem.reboomValue = @"HideControls";
+					HSUISwitch *prefswitch = [%c(HSUISwitch) switchWithState:0 offFont:@"Futura_16px_Solid.fnt" onFont:@"Futura_16px_Solid.fnt" onStateChange:^(HSUISwitch *sender) {
+						os_log(OS_LOG_DEFAULT, "[ReBoom] switch state changed to %d", sender.state);
+					}];
+					[hideControlsItem setSwitchElement:prefswitch state:0];
 					return hideControlsItem;
 				} default: {
 					return [%c(SettingsItem) itemWithTitle:@"ReBoom" value:@"Error" type:1];
@@ -464,6 +472,25 @@ int currentHeaderLabel = 0; // used for setting custom text
 			showAlert(@"Welcome to ReBoom. All options can be changed from within the game's settings menu.\n\n(This will not be shown again)", @"Got it!");
 		}
 	});
+	return %orig;
+}
+%end
+
+
+
+
+%hook HSUISwitch
++(id)switchWithState:(int)state offFont:(id)font onFont:(id)font3 onStateChange:(id)change {
+	os_log(OS_LOG_DEFAULT, "[reboom] HSUISwitch switchWithState: %d offFont: %@ onFont: %@ onStateChange: %{public}@", state, font, font3, change);
+	os_log(OS_LOG_DEFAULT, "[reboom] HSUISwitch switchWithState: int offFont: %@ onFont: %@ onStateChange: %@", [font class], [font3 class], [change class]);
+	return %orig;
+}
+%end
+
+
+%hook SettingsItem
++(id)itemWithTitle:(id)title value:(id)value type:(int)type {
+	os_log(OS_LOG_DEFAULT, "[reboom] SettingsItem itemWithTitle: %@ value: %@ type: %d", title, value, type);
 	return %orig;
 }
 %end
