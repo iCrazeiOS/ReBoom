@@ -1,5 +1,4 @@
 #import <UIKit/UIKit.h>
-#import <os/log.h>
 #import "Boom-Headers/HSAlertView.h"
 #import <objc/runtime.h>
 

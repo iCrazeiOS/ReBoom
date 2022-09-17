@@ -6,7 +6,6 @@ include $(THEOS)/makefiles/common.mk
 
 TWEAK_NAME = ReBoom
 ReBoom_FILES = $(wildcard Hooks/*.x) Hooks/Common.m
-# ReBoom_CFLAGS = -fobjc-arc # causes segfault when clicking on alert button?..
 ReBoom_FRAMEWORKS = UIKit CoreFoundation
 
 include $(THEOS_MAKE_PATH)/tweak.mk

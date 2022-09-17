@@ -1,6 +1,3 @@
-// todo
-// mem management
-
 /*
 	Almost everything in this file is for TAS or settings.
 	All other options can be found in the Hooks directory.
@@ -40,6 +37,8 @@ void loadReplay(NSString *name) {
 			tas.length = frame;
 		}
 	}
+
+	[fileContent release];
 }
 
 // TAS, Unlocks, Pause Bug, Disable Tutorials
@@ -132,8 +131,7 @@ void loadReplay(NSString *name) {
 // on level completion
 -(void)goal:(float)goal {
 	if (getPrefBool(@"RecordMode") && recording && ![recording isEqualToString:@""]) {
-		HSAlertView *delegate = [[%c(HSAlertView) alloc] init];
-		HSAlertView *alertView = [[%c(HSAlertView) alloc] initWithTitle:@"ReBoom" message:@"Would you like to save the TAS recording?" delegate:delegate cancelButtonTitle:@"No" otherButtonTitles:@"Yes", nil];
+		HSAlertView *alertView = [[%c(HSAlertView) alloc] initWithTitle:@"ReBoom" message:@"Would you like to save the TAS recording?" delegate:[[%c(HSAlertView) alloc] init] cancelButtonTitle:@"No" otherButtonTitles:@"Yes", nil];
 		[alertView show];
 	} else if (getPrefBool(@"ReplayMode") && ![self isChallenge] && ![self isTournament]) {
 		NSString *path = [NSString stringWithFormat:@"%@/%@%@", [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] firstObject].path, [self levelId], TAS_EXT];
@@ -251,6 +249,7 @@ SettingsItem *createSwitch(NSString *title, NSString *key) {
 
 	// tldr: hacky code to fix a weird game bug
 	[item setSwitchElement:[itemSwitch initWithState:0 offFont:nil onFont:nil onStateChange:nil] state:1];
+	[itemSwitch release];
 	return item;
 }
 
@@ -429,7 +428,7 @@ NSString *lastReBoomValue = nil;
 		[recording writeToURL:path atomically:NO encoding:NSASCIIStringEncoding error:NULL];
 		showAlert(@"TAS recording has been saved!", @"Dismiss");
 	} else if ([view.title isEqualToString:@"Custom Level URL"]) {
-		if (index == 1) {
+		if (index == 1) { // "Save" button
 			NSString *levelURL = view.inputTextField.text;
 			if (![levelURL isEqualToString:@""]) {
 				// if no protocol is specified, prepend https://
@@ -455,9 +454,11 @@ NSString *lastReBoomValue = nil;
 			NSUserDefaults *preferences = [[NSUserDefaults alloc] initWithSuiteName:DEFAULTS_NAME];
 			[preferences setObject:levelURL forKey:@"CustomLevelURL"];
 
+			[preferences release];
+
 			// if empty, setvalue to 'Unset', else if custom name is set, setvalue to that, else setvalue to 'Set'
 			[levelURLItem setValue:[levelURL isEqualToString:@""] ? @"Unset" : (customName ?: @"Set")];
-		} else if (index == 2) {
+		} else if (index == 2) { // "Browse" button
 			// wait for alert to dismiss, so we can get the correct view controller
 			// 0.1 seconds should be way more than enough time
 			dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.1 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
@@ -475,6 +476,7 @@ NSString *lastReBoomValue = nil;
 						dispatch_async(dispatch_get_main_queue(), ^{ // go back to the main thread
 							NSUserDefaults *preferences = [[NSUserDefaults alloc] initWithSuiteName:DEFAULTS_NAME];
 							[preferences setObject:[NSString stringWithFormat:@"https://raw.githubusercontent.com/iCrazeiOS/ReBoom-Levels/main/Levels/%@.plhs", vc.selectedCustomLevel[@"filename"]] forKey:@"CustomLevelURL"];
+							[preferences release];
 							[levelURLItem setValue:vc.selectedCustomLevel[@"display_name"]]; // set button text to level name
 
 							vc.selectedCustomLevel = nil; // reset
