@@ -30,23 +30,19 @@ static BOOL LOGS_ENABLED = NO;
 +(id)spriteWithSpriteFrameName:(id)spriteFrameName;
 @end
 
-
 @interface HSUISwitch : NSObject
 @property(assign, nonatomic) int state;
-+(id)switchWithState:(int)state offFont:(id)font onFont:(id)font3 onStateChange:(id)change;
--(id)initWithState:(int)state offFont:(id)font onFont:(id)font3 onStateChange:(id)change;
+@property (strong) NSString *reboomValue;
+-(id)initWithState:(int)state offFont:(id)offFont onFont:(id)onFont onStateChange:(id)change;
+-(void)setState:(int)state animate:(BOOL)animate;
+-(void)stateChanged;
 @end
 
-
-
-
 @interface SettingsItem : UITableViewCell
-@property (readwrite, assign) NSString *reboomValue;
+@property (strong) NSString *reboomValue;
 +(SettingsItem *)itemWithTitle:(NSString *)title value:(NSString *)value type:(int)type;
 -(void)setValue:(NSString *)title;
--(void)activate;
 -(void)setIcon:(HSAdjustedSprite *)icon;
-
 -(void)setSwitchElement:(HSUISwitch *)element state:(int)state;
 @end
 

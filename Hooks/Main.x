@@ -96,7 +96,7 @@ void loadReplay(NSString *name) {
 	if (getPrefBool(@"EverythingUnlocked")) [[%c(LevelHandler) sharedInstance] unLockNextLevel];
 
 	// replay mode
-	if (getPrefBool(@"TASMode") && ![self isChallenge] && ![self isTournament] && [getLevelURL() isEqualToString:@""]) loadReplay([self levelId]);
+	if (getPrefBool(@"ReplayMode") && ![self isChallenge] && ![self isTournament] && [getLevelURL() isEqualToString:@""]) loadReplay([self levelId]);
 
 	// record mode
 	if (getPrefBool(@"RecordMode") && ![self isChallenge] && ![self isTournament] && [getLevelURL() isEqualToString:@""]) {
@@ -111,7 +111,7 @@ void loadReplay(NSString *name) {
 -(void)update:(float)update {
 	%orig(FIXED_DELTA);
 
-	if (getPrefBool(@"TASMode") && ![self isChallenge] && ![self isTournament]) {
+	if (getPrefBool(@"ReplayMode") && ![self isChallenge] && ![self isTournament]) {
 		if (tas.length > 0 && frameID < tas.length && [tas.commands[frameID] length] > 0) {
 			const NSString *list = tas.commands[frameID];
 			
@@ -134,7 +134,7 @@ void loadReplay(NSString *name) {
 		HSAlertView *delegate = [[%c(HSAlertView) alloc] init];
 		HSAlertView *alertView = [[%c(HSAlertView) alloc] initWithTitle:@"ReBoom" message:@"Would you like to save the TAS recording?" delegate:delegate cancelButtonTitle:@"No" otherButtonTitles:@"Yes", nil];
 		[alertView show];
-	} else if (getPrefBool(@"TASMode") && ![self isChallenge] && ![self isTournament]) {
+	} else if (getPrefBool(@"ReplayMode") && ![self isChallenge] && ![self isTournament]) {
 		NSString *path = [NSString stringWithFormat:@"%@/%@%@", [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] firstObject].path, [self levelId], TAS_EXT];
 		if ([[NSFileManager defaultManager] fileExistsAtPath:path]) showAlert(@"TAS playback complete", @"Dismiss");
 	}
@@ -239,7 +239,22 @@ void loadReplay(NSString *name) {
 
 /* IN-GAME PREFS */
 
-SettingsItem *replayItem, *recordItem, *levelURLItem, *discordItem; // special actions
+SettingsItem *createSwitch(NSString *title, NSString *key) {
+	SettingsItem *item = [%c(SettingsItem) itemWithTitle:title value:@"" type:0]; // create settings entry
+	HSUISwitch *itemSwitch = [%c(HSUISwitch) alloc]; // create switch
+	itemSwitch.reboomValue = key; // give switch the prefence key
+	// set the entry's switch to one we initialise
+	// we can pass nil in here, because we hook [HSUISwitch initWithSwitch:offFont:onFont:onStateChange:] later
+	// this is just because the game has a bug where the switch gets initialised twice
+	// my hacky fix lets us retain the prefence key when the switch is re-initialised, as it actually creates a new HSUISwitch object
+
+	// tldr: hacky code to fix a weird game bug
+	[item setSwitchElement:[itemSwitch initWithState:0 offFont:nil onFont:nil onStateChange:nil] state:1];
+	return item;
+}
+
+HSUISwitch *replaySwitch, *recordSwitch;
+SettingsItem *levelURLItem, *discordItem; // special actions
 int currentHeaderLabel = 0; // used for setting custom text
 
 %hook Settings
@@ -280,29 +295,13 @@ int currentHeaderLabel = 0; // used for setting custom text
 		case 1: {
 			switch (indexPath.row) {
 				case 0: {
-					SettingsItem *pauseItem = [%c(SettingsItem) itemWithTitle:@"Un-patch Pause Bug" value:(getPrefBool(@"PauseBug") ? @"Enabled" : @"Disabled") type:1];
-					pauseItem.reboomValue = @"PauseBug";
-					return pauseItem;
+					return createSwitch(@"Un-patch Pause Bug", @"PauseBug");
 				} case 1: {
-					SettingsItem *unlockItem = [%c(SettingsItem) itemWithTitle:@"Everything Unlocked" value:(getPrefBool(@"EverythingUnlocked") ? @"Enabled" : @"Disabled") type:1];
-					unlockItem.reboomValue = @"EverythingUnlocked";
-					return unlockItem;
+					return createSwitch(@"Everything Unlocked", @"EverythingUnlocked");
 				} case 2: {
-					SettingsItem *tutorialsItem = [%c(SettingsItem) itemWithTitle:@"Disable Tutorials" value:(getPrefBool(@"DisableTutorials") ? @"Enabled" : @"Disabled") type:1];
-					tutorialsItem.reboomValue = @"DisableTutorials";
-					return tutorialsItem;
+					return createSwitch(@"Disable Tutorials", @"DisableTutorials");
 				} case 3: {
-					// SettingsItem *hideControlsItem = [%c(SettingsItem) itemWithTitle:@"Hide Touch Controls" value:(getPrefBool(@"HideControls") ? @"Enabled" : @"Disabled") type:1];
-					// hideControlsItem.reboomValue = @"HideControls";
-					// return hideControlsItem;
-
-					SettingsItem *hideControlsItem = [%c(SettingsItem) itemWithTitle:@"Hide Touch Controls" value:nil type:0];
-					hideControlsItem.reboomValue = @"HideControls";
-					HSUISwitch *prefswitch = [%c(HSUISwitch) switchWithState:0 offFont:@"Futura_16px_Solid.fnt" onFont:@"Futura_16px_Solid.fnt" onStateChange:^(HSUISwitch *sender) {
-						os_log(OS_LOG_DEFAULT, "[ReBoom] switch state changed to %d", sender.state);
-					}];
-					[hideControlsItem setSwitchElement:prefswitch state:0];
-					return hideControlsItem;
+					return createSwitch(@"Hide Touch Controls", @"HideControls");
 				} default: {
 					return [%c(SettingsItem) itemWithTitle:@"ReBoom" value:@"Error" type:1];
 				}
@@ -310,13 +309,9 @@ int currentHeaderLabel = 0; // used for setting custom text
 		} case 2: {
 			switch (indexPath.row) {
 				case 0: {
-					replayItem = [%c(SettingsItem) itemWithTitle:@"Replay Mode" value:(getPrefBool(@"TASMode") ? @"Enabled" : @"Disabled") type:1];
-					replayItem.reboomValue = @"TASMode";
-					return replayItem;
+					return createSwitch(@"Replay Mode", @"ReplayMode");
 				} case 1: {
-					recordItem = [%c(SettingsItem) itemWithTitle:@"Record Mode" value:(getPrefBool(@"RecordMode") ? @"Enabled" : @"Disabled") type:1];
-					recordItem.reboomValue = @"RecordMode";
-					return recordItem;
+					return createSwitch(@"Record Mode", @"RecordMode");
 				} default: {
 					return [%c(SettingsItem) itemWithTitle:@"ReBoom" value:@"Error" type:1];
 				}
@@ -342,25 +337,55 @@ int currentHeaderLabel = 0; // used for setting custom text
 }
 %end
 
+// this part fixes our custom switches
+BOOL lastCallWasReBoom = NO;
+NSString *lastReBoomValue = nil;
+
+%hook HSUISwitch
+%property (strong) NSString *reboomValue;
+-(id)initWithState:(int)state offFont:(id)offFont onFont:(id)onFont onStateChange:(id)change {
+	// this function gets called twice
+	// the first call is what we can control, the second one is what is actually used
+	// here's some hacky code to make sure the can detect both calls, and retain the reboomValue (preference key)
+	if (self.reboomValue || lastCallWasReBoom) {
+		lastCallWasReBoom = !lastCallWasReBoom; // ensures we don't overwrite the game's switches
+		!lastCallWasReBoom ? (self.reboomValue = lastReBoomValue) : (lastReBoomValue = self.reboomValue); // retain key
+
+		// allows us to make these two switches conflict (only one can be on at a time)
+		if ([self.reboomValue isEqualToString:@"ReplayMode"]) replaySwitch = self;
+		else if ([self.reboomValue isEqualToString:@"RecordMode"]) recordSwitch = self;
+
+		// the state is flipped for some reason
+		// 1 is off, 0 is on
+		void *handler = ^void(HSUISwitch *sender) {
+			setPrefBool(self.reboomValue, !self.state);
+			if ([self.reboomValue isEqualToString:@"ReplayMode"] && !self.state) {
+				setPrefBool(@"RecordMode", 0); // set pref
+				[recordSwitch setState:1 animate:YES]; // flip switch
+			} else if ([self.reboomValue isEqualToString:@"RecordMode"] && !self.state) {
+				setPrefBool(@"ReplayMode", 0); // set pref
+				[replaySwitch setState:1 animate:YES]; // flip switch
+			}
+		};
+		return %orig(getPrefBool(self.reboomValue) ? 0 : 1, @"Futura_16px_Solid.fnt", @"Futura_16px_Outline.fnt", handler);
+	}
+	return %orig;
+}
+%end
+
+
 %hook SettingsItem
 // Add our custom property
 %property (strong) NSString *reboomValue;
 -(void)activate {
-	// If it is one of our options
-	if (self.reboomValue) {
-		if ([[[self valueForKey:@"valueLabel"] valueForKey:@"string_"] isEqualToString:@"Enabled"]) {
-			setPrefBool(self.reboomValue, NO);
-			[self setValue:@"Disabled"];
-		} else {
-			setPrefBool(self.reboomValue, YES);
-			[self setValue:@"Enabled"];
-
-			// Make the replay mode button and record mode button conflict (so you can only have one enabled at once)
-			if (self == replayItem && [[[recordItem valueForKey:@"valueLabel"] valueForKey:@"string_"] isEqualToString:@"Enabled"]) {
-				[recordItem activate];
-			} else if (self == recordItem && [[[replayItem valueForKey:@"valueLabel"] valueForKey:@"string_"] isEqualToString:@"Enabled"]) {
-				[replayItem activate];
-			}
+	// If it has a switch
+	HSUISwitch *switchElement = [self valueForKey:@"switchElement"];
+	if (switchElement) {
+		// this lets us tap our settings items to toggle the switch, instead of just the switch itself
+		// this matches the behavior of the game's own switches
+		if (switchElement.reboomValue) { // if it is one of our switches
+			[switchElement setState:!switchElement.state animate:YES]; // flip switch
+			[switchElement stateChanged]; // set the preference value
 		}
 	} else if (self == levelURLItem) {
 		HSAlertView *alertView = [[%c(HSAlertView) alloc] initWithTitle:@"Custom Level URL" message:nil delegate:[[%c(HSAlertView) alloc] init] cancelButtonTitle:@"Cancel" otherButtonTitles:@"Save", @"Browse", nil];
@@ -461,6 +486,8 @@ int currentHeaderLabel = 0; // used for setting custom text
 }
 %end
 
+
+
 // When the game loads
 %hook AppController
 -(BOOL)application:(id)arg1 didFinishLaunchingWithOptions:(id)arg2 {
@@ -472,25 +499,6 @@ int currentHeaderLabel = 0; // used for setting custom text
 			showAlert(@"Welcome to ReBoom. All options can be changed from within the game's settings menu.\n\n(This will not be shown again)", @"Got it!");
 		}
 	});
-	return %orig;
-}
-%end
-
-
-
-
-%hook HSUISwitch
-+(id)switchWithState:(int)state offFont:(id)font onFont:(id)font3 onStateChange:(id)change {
-	os_log(OS_LOG_DEFAULT, "[reboom] HSUISwitch switchWithState: %d offFont: %@ onFont: %@ onStateChange: %{public}@", state, font, font3, change);
-	os_log(OS_LOG_DEFAULT, "[reboom] HSUISwitch switchWithState: int offFont: %@ onFont: %@ onStateChange: %@", [font class], [font3 class], [change class]);
-	return %orig;
-}
-%end
-
-
-%hook SettingsItem
-+(id)itemWithTitle:(id)title value:(id)value type:(int)type {
-	os_log(OS_LOG_DEFAULT, "[reboom] SettingsItem itemWithTitle: %@ value: %@ type: %d", title, value, type);
 	return %orig;
 }
 %end
