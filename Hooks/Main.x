@@ -1,6 +1,5 @@
 // todo
 // mem management
-// fix customlevelname stuff
 
 /*
 	Almost everything in this file is for TAS or settings.
@@ -58,9 +57,12 @@ void loadReplay(NSString *name) {
 			level = [NSMutableDictionary dictionaryWithDictionary:level];
 			level[@"url"] = customLevelURL;
 			if ([plistDict objectForKey:@"SPRITES_INFO"]) {
-				os_log(OS_LOG_DEFAULT, "reboom level sprites detected");
-				os_log(OS_LOG_DEFAULT, "reboom Custom level name 1: %{public}@", [plistDict objectForKey:@"CustomLevelName"]);
-				level[@"levelName"] = [plistDict objectForKey:@"CustomLevelName"] ?: @"Custom Level"; // doesn't work rn
+				if ([plistDict objectForKey:@"CustomLevelName"]) {
+					NSString *customLevelName = [plistDict objectForKey:@"CustomLevelName"];
+					customLevelName = [customLevelName stringByReplacingOccurrencesOfString:@"Custom_" withString:@""];
+					customLevelName = [customLevelName stringByReplacingOccurrencesOfString:@"_" withString:@" "];
+					level[@"LevelName"] = customLevelName;
+				} else level[@"LevelName"] = @"Custom Level";
 			} else {
 				showAlert(@"Error: The custom level seems to be invalid", @"Dismiss");
 				return %orig;
@@ -71,7 +73,6 @@ void loadReplay(NSString *name) {
 		}
 	}
 
-	os_log(OS_LOG_DEFAULT, "reboom Custom level name 2: %{public}@", level[@"levelName"]);
 	return %orig(level, challenge, tournament);
 }
 
