@@ -48,7 +48,7 @@ void loadReplay(NSString *name) {
 
 	NSString *customLevelURL = getLevelURL();
 	// switch to custom level url if string is not empty
-	if (![customLevelURL isEqualToString:@""]) {
+	if (customLevelURL && ![customLevelURL isEqualToString:@""]) {
 		// verify that the URL is valid
 		NSData *data = [NSData dataWithContentsOfURL:[NSURL URLWithString:customLevelURL]];
 		if (data) {
