@@ -289,6 +289,8 @@ int currentHeaderLabel = 0; // used for setting custom text
 			[levelURLItem setIcon:[%c(HSAdjustedSprite) spriteWithSpriteFrameName:@"ui-icon-settings-icloud-sync.png"]];
 			return levelURLItem;
 		}
+
+		return orig;
 	}
 	// Loop through our custom sections
 	switch (indexPath.section) {
@@ -328,8 +330,6 @@ int currentHeaderLabel = 0; // used for setting custom text
 					return [%c(SettingsItem) itemWithTitle:@"ReBoom" value:@"Error" type:1];
 				}
 			}
-		} default: {
-			return %orig;
 		}
 	}
 	
