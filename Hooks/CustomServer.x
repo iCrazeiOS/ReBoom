@@ -34,11 +34,3 @@
 	%orig([NSString stringWithFormat:@"%@/tournaments/", SERVER_HOST]);
 }
 %end
-
-
-
-%ctor {
-	NSString *bundleID = [[NSBundle mainBundle] bundleIdentifier];
-	if ([bundleID containsString:@"com.happysprites.boom"] || [bundleID containsString:@"eu.markstam.boomclone"]) %init;
-}
-
