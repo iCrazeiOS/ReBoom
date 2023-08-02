@@ -1,6 +1,6 @@
-export ARCHS = arm64 arm64e
+export ARCHS = armv7 armv7s arm64
 export PREFIX = $(THEOS)/toolchain/Xcode11.xctoolchain/usr/bin/
-export SDKVERSION = 12.2
+export SDKVERSION = 6.0
 
 include $(THEOS)/makefiles/common.mk
 
