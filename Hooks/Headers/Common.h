@@ -8,6 +8,6 @@
 #ifndef FUNCTIONS_INCLUDED
 #define FUNCTIONS_INCLUDED
 BOOL getPrefBool(NSString *key);
-void setPrefBool(NSString *key, bool value);
+void setPrefBool(NSString *key, BOOL value);
 void showAlert(NSString *message, NSString *buttonText);
 #endif
