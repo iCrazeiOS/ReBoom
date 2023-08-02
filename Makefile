@@ -8,6 +8,10 @@ TWEAK_NAME = ReBoom
 ReBoom_FILES = $(wildcard Hooks/*.x) Hooks/Common.m
 ReBoom_FRAMEWORKS = UIKit CoreFoundation
 
+ifeq ($(SDKVERSION),6.0)
+	ReBoom_FILES := $(filter-out Hooks/KeyboardControls.x, $(ReBoom_FILES))
+endif
+
 include $(THEOS_MAKE_PATH)/tweak.mk
 
 after-install::
