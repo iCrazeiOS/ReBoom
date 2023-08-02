@@ -399,7 +399,8 @@ NSString *lastReBoomValue = nil;
 		alertView.inputTextField.placeholder = @"Leave blank to disable";
 		[alertView show];
 	} else if (self == discordItem) {
-		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://discord.gg/wgrbBPvrQ7"]];
+		UIApplication *app = [UIApplication sharedApplication];
+		[app performSelector:@selector(openURL:) withObject:[NSURL URLWithString:@"https://discord.gg/wgrbBPvrQ7"]];
 	}
 	%orig;
 }
