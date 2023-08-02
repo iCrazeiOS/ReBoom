@@ -15,7 +15,8 @@ void loadReplay(NSString *name) {
 	tas.length = 0;
 	tas.commands = [[NSMutableArray alloc] init];
 
-	NSString *path = [NSString stringWithFormat:@"%@/%@%@", [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] firstObject].path, name, TAS_EXT];
+	NSArray *array = [[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask];
+	NSString *path = [NSString stringWithFormat:@"%@/%@%@", ((NSURL *)array[0]).path, name, TAS_EXT];
 	if (![[NSFileManager defaultManager] fileExistsAtPath:path]) return;
 
 	NSString *fileContent = [[NSString alloc] initWithContentsOfFile:path encoding:NSUTF8StringEncoding error:nil];
@@ -134,7 +135,8 @@ void loadReplay(NSString *name) {
 		HSAlertView *alertView = [[%c(HSAlertView) alloc] initWithTitle:@"ReBoom" message:@"Would you like to save the TAS recording?" delegate:[[%c(HSAlertView) alloc] init] cancelButtonTitle:@"No" otherButtonTitles:@"Yes", nil];
 		[alertView show];
 	} else if (getPrefBool(@"ReplayMode") && ![self isChallenge] && ![self isTournament]) {
-		NSString *path = [NSString stringWithFormat:@"%@/%@%@", [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] firstObject].path, [self levelId], TAS_EXT];
+		NSArray *array = [[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask];
+		NSString *path = [NSString stringWithFormat:@"%@/%@%@", ((NSURL *)array[0]).path, [self levelId], TAS_EXT];
 		if ([[NSFileManager defaultManager] fileExistsAtPath:path]) showAlert(@"TAS playback complete", @"Dismiss");
 	}
 
@@ -284,7 +286,11 @@ int currentHeaderLabel = 0; // used for setting custom text
 		SettingsItem *orig = %orig;
 
 		// Check title of button, as its index may vary
-		if ([((CCLabelTTF *)[orig valueForKey:@"titleLabel"]).string containsString:@"Facebook"]) { // modify the facebook button
+
+		
+		// use rangeOfString instead of containsString for iOS 7 compatibility
+		BOOL containsFacebook = [((CCLabelTTF *)[orig valueForKey:@"titleLabel"]).string rangeOfString:@"Facebook"].location != NSNotFound;
+		if (containsFacebook) { // modify the facebook button
 			levelURLItem = [%c(SettingsItem) itemWithTitle:@"Custom Level" value:[getLevelURL() isEqualToString:@""] ? @"Unset" : @"Set" type:1];
 			[levelURLItem setIcon:[%c(HSAdjustedSprite) spriteWithSpriteFrameName:@"ui-icon-settings-icloud-sync.png"]];
 			return levelURLItem;
@@ -393,7 +399,7 @@ NSString *lastReBoomValue = nil;
 		alertView.inputTextField.placeholder = @"Leave blank to disable";
 		[alertView show];
 	} else if (self == discordItem) {
-		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://discord.gg/wgrbBPvrQ7"] options:@{} completionHandler:nil];
+		[[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://discord.gg/wgrbBPvrQ7"]];
 	}
 	%orig;
 }
@@ -424,7 +430,7 @@ NSString *lastReBoomValue = nil;
 	NSString *customName = nil;
 	if ([view.title isEqualToString:@"ReBoom"] && index == 1) { // only matches the "save TAS" alert
 		// save TAS recording to file ( Boom/Documents/{levelID}.btas )
-		NSURL *path = [NSURL URLWithString: [NSString stringWithFormat:@"%@%@%@", [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] firstObject], [[%c(TrialSession) currentSession] levelId], TAS_EXT]];
+		NSURL *path = [NSURL URLWithString: [NSString stringWithFormat:@"%@%@%@", [[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask][0], [[%c(TrialSession) currentSession] levelId], TAS_EXT]];
 		[recording writeToURL:path atomically:NO encoding:NSASCIIStringEncoding error:NULL];
 		showAlert(@"TAS recording has been saved!", @"Dismiss");
 	} else if ([view.title isEqualToString:@"Custom Level URL"]) {
@@ -505,10 +511,3 @@ NSString *lastReBoomValue = nil;
 	return %orig;
 }
 %end
-
-
-
-%ctor {
-	NSString *bundleID = [[NSBundle mainBundle] bundleIdentifier];
-	if ([bundleID containsString:@"com.happysprites.boom"] || [bundleID containsString:@"eu.markstam.boomclone"]) %init;
-}

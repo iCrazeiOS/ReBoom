@@ -26,17 +26,10 @@
 	%orig;
 	if ([view.title isEqualToString:@"Remove Ghost?"] && index == 0) {
 		NSArray *paths = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES);
-		NSString *applicationSupportDirectory = [paths firstObject];
+		NSString *applicationSupportDirectory = paths[0];
 		NSString *ghostPath = [NSString stringWithFormat:@"%@/%@.ghost", applicationSupportDirectory, [[%c(TrialSession) currentSession] levelId]];
 		[[NSFileManager defaultManager] removeItemAtPath:ghostPath error:nil];
 		[[%c(TrialSession) currentSession] quit];
 	}
 }
 %end
-
-
-
-%ctor {
-	NSString *bundleID = [[NSBundle mainBundle] bundleIdentifier];
-	if ([bundleID containsString:@"com.happysprites.boom"] || [bundleID containsString:@"eu.markstam.boomclone"]) %init;
-}
