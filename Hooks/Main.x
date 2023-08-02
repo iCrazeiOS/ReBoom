@@ -6,8 +6,8 @@
 #import "Headers/Main.h"
 
 NSString *getLevelURL() {
-	NSUserDefaults *preferences = [[NSUserDefaults alloc] initWithSuiteName:DEFAULTS_NAME];
-	return [preferences objectForKey:@"CustomLevelURL"];
+	NSUserDefaults *preferences = [NSUserDefaults standardUserDefaults];
+	return [preferences objectForKey:@"reboom_CustomLevelURL"];
 }
 
 // Load TAS recording
@@ -451,8 +451,8 @@ NSString *lastReBoomValue = nil;
 			}
 
 			// save url
-			NSUserDefaults *preferences = [[NSUserDefaults alloc] initWithSuiteName:DEFAULTS_NAME];
-			[preferences setObject:levelURL forKey:@"CustomLevelURL"];
+			NSUserDefaults *preferences = [NSUserDefaults standardUserDefaults];
+			[preferences setObject:levelURL forKey:@"reboom_CustomLevelURL"];
 
 			[preferences release];
 
@@ -474,8 +474,8 @@ NSString *lastReBoomValue = nil;
 					dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{ // background thread so it doesn't block the main thread
 						while (!vc.selectedCustomLevel) usleep(100000); // wait until not nil
 						dispatch_async(dispatch_get_main_queue(), ^{ // go back to the main thread
-							NSUserDefaults *preferences = [[NSUserDefaults alloc] initWithSuiteName:DEFAULTS_NAME];
-							[preferences setObject:[NSString stringWithFormat:@"https://raw.githubusercontent.com/iCrazeiOS/ReBoom-Levels/main/Levels/%@.plhs", vc.selectedCustomLevel[@"filename"]] forKey:@"CustomLevelURL"];
+							NSUserDefaults *preferences = [NSUserDefaults standardUserDefaults];
+							[preferences setObject:[NSString stringWithFormat:@"https://raw.githubusercontent.com/iCrazeiOS/ReBoom-Levels/main/Levels/%@.plhs", vc.selectedCustomLevel[@"filename"]] forKey:@"reboom_CustomLevelURL"];
 							[preferences release];
 							[levelURLItem setValue:vc.selectedCustomLevel[@"display_name"]]; // set button text to level name
 

@@ -6,14 +6,14 @@
 
 // Get pref value
 BOOL getPrefBool(NSString *key) {
-	NSUserDefaults *preferences = [[NSUserDefaults alloc] initWithSuiteName:DEFAULTS_NAME];
-	return [preferences boolForKey:key];
+	NSUserDefaults *preferences = [NSUserDefaults standardUserDefaults];
+	return [preferences boolForKey:[NSString stringWithFormat:@"reboom_%@", key]];
 }
 
 // Set pref value
 void setPrefBool(NSString *key, BOOL value) {
-	NSUserDefaults *preferences = [[NSUserDefaults alloc] initWithSuiteName:DEFAULTS_NAME];
-	[preferences setBool:value forKey:key];
+	NSUserDefaults *preferences = [NSUserDefaults standardUserDefaults];
+	[preferences setBool:value forKey:[NSString stringWithFormat:@"reboom_%@", key]];
 }
 
 // Show the game's custom alert view
