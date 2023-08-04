@@ -25,9 +25,9 @@ include $(THEOS_MAKE_PATH)/tweak.mk
 # change info for legacy (32-bit) builds
 before-package::
 ifeq ($(LEGACY),1)
-	sed -i '' 's/^Package: .*/Package: com.icraze.reboom.32bit/' $(THEOS_STAGING_DIR)/DEBIAN/control
-	sed -i '' 's/^Conflicts: .*/Conflicts: com.icraze.reboom/' $(THEOS_STAGING_DIR)/DEBIAN/control
-	sed -i '' 's/^Name: .*/Name: ReBoom (32-bit)/' $(THEOS_STAGING_DIR)/DEBIAN/control
+	@sed -i '' 's/^Package: .*/Package: com.icraze.reboom.32bit/' $(THEOS_STAGING_DIR)/DEBIAN/control
+	@sed -i '' 's/^Conflicts: .*/Conflicts: com.icraze.reboom/' $(THEOS_STAGING_DIR)/DEBIAN/control
+	@sed -i '' 's/^Name: .*/Name: ReBoom (32-bit)/' $(THEOS_STAGING_DIR)/DEBIAN/control
 endif
 
 after-install::
