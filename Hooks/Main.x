@@ -57,8 +57,8 @@ void loadReplay(NSString *name) {
 	[fileContent release];
 }
 
+// Custom levels
 BOOL shouldReplaceLevel = NO;
-
 %hook NSBundle
 -(NSString *)pathForResource:(NSString *)resource ofType:(NSString *)type inDirectory:(NSString *)directory {
 	if (!shouldReplaceLevel) return %orig;
