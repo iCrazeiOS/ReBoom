@@ -1,6 +1,8 @@
 /*
 	Adds keyboard support for people playing the game on Apple Silicon Macs.
 	Should also support iPads with keyboards connected, but I don't have one to test with.
+
+	This file is not compiled when LEGACY=1 is set, as these classes do not exist below iOS 7.
 */
 
 #import "Headers/KeyboardControls.h"
