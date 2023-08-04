@@ -14,7 +14,7 @@ ReBoom adds new functionality and fixes to the game.
 - Custom server (hosted by Banana)
 - Ability to load custom levels
 	- Levels can be created via [this tool](https://github.com/lachylegend/Boom-Level-Editor)
-	- Community level repo accessible via settings menu
+	- [Community level repo](https://github.com/iCrazeiOS/ReBoom-Levels) accessible via settings menu
 - Full TAS recording/replay functionality
 - Keyboard controls (for iPads & Apple Silicon Macs)
 - Easy way to reset a level's ghost
