@@ -20,6 +20,8 @@ else
 	THEOS_PACKAGE_NAME = com.icraze.reboom
 endif
 
+ReBoom_CFLAGS = -DVERSION_STRING='"ReBoom v$(THEOS_PACKAGE_BASE_VERSION)"'
+
 include $(THEOS_MAKE_PATH)/tweak.mk
 
 # change info for legacy (32-bit) builds

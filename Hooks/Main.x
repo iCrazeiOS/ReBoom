@@ -413,7 +413,7 @@ NSString *lastReBoomValue = nil;
 	if ([string hasPrefix:@"Boom! version "]) { // replace original labels
 		string = @"";
 		// loop through each of our labels
-		NSArray *customLabels = @[@"Miscellaneous:", @"TAS Tools:", @"ReBoom by @iCrazeiOS\nThanks to Banana, Mac & lachylegend", @"ReBoom v1.1"];
+		NSArray *customLabels = @[@"Miscellaneous:", @"TAS Tools:", @"ReBoom by @iCrazeiOS\nThanks to Banana, Mac & lachylegend", @VERSION_STRING];
 		string = ((currentHeaderLabel < [customLabels count]) ? customLabels[currentHeaderLabel] : @"");
 		currentHeaderLabel++;
 	}
