@@ -66,8 +66,8 @@ static BOOL LOGS_ENABLED = NO;
 
 struct Movie {
 	int length;
-	NSMutableArray* commands;
+	NSMutableArray *commands;
 };
 struct Movie tas;
-NSMutableString* recording;
+NSMutableString *recording;
 static unsigned long frameID, lastFrameID = 0;

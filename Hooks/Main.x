@@ -7,12 +7,14 @@
 
 NSString *getLevelURL() {
 	NSUserDefaults *preferences = [NSUserDefaults standardUserDefaults];
-	return [preferences objectForKey:@"reboom_CustomLevelURL"];
+	NSString *customLevelURL = [preferences objectForKey:@"reboom_CustomLevelURL"];
+	return customLevelURL ?: @"";
 }
 
 // Load TAS recording
 void loadReplay(NSString *name) {
 	tas.length = 0;
+	if (tas.commands) [tas.commands release];
 	tas.commands = [[NSMutableArray alloc] init];
 
 	NSArray *array = [[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask];
@@ -286,8 +288,6 @@ int currentHeaderLabel = 0; // used for setting custom text
 		SettingsItem *orig = %orig;
 
 		// Check title of button, as its index may vary
-
-		
 		// use rangeOfString instead of containsString for iOS 7 compatibility
 		BOOL containsFacebook = [((CCLabelTTF *)[orig valueForKey:@"titleLabel"]).string rangeOfString:@"Facebook"].location != NSNotFound;
 		if (containsFacebook) { // modify the facebook button
@@ -413,7 +413,7 @@ NSString *lastReBoomValue = nil;
 	if ([string hasPrefix:@"Boom! version "]) { // replace original labels
 		string = @"";
 		// loop through each of our labels
-		NSArray *customLabels = @[@"Miscellaneous:", @"TAS Tools:", @"ReBoom by @iCrazeiOS\nThanks to Banana, Mac & lachylegend", @"ReBoom v1.0"];
+		NSArray *customLabels = @[@"Miscellaneous:", @"TAS Tools:", @"ReBoom by @iCrazeiOS\nThanks to Banana, Mac & lachylegend", @"ReBoom v1.1"];
 		string = ((currentHeaderLabel < [customLabels count]) ? customLabels[currentHeaderLabel] : @"");
 		currentHeaderLabel++;
 	}
@@ -461,8 +461,6 @@ NSString *lastReBoomValue = nil;
 			NSUserDefaults *preferences = [NSUserDefaults standardUserDefaults];
 			[preferences setObject:levelURL forKey:@"reboom_CustomLevelURL"];
 
-			[preferences release];
-
 			// if empty, setvalue to 'Unset', else if custom name is set, setvalue to that, else setvalue to 'Set'
 			[levelURLItem setValue:[levelURL isEqualToString:@""] ? @"Unset" : (customName ?: @"Set")];
 		} else if (index == 2) { // "Browse" button
@@ -483,7 +481,6 @@ NSString *lastReBoomValue = nil;
 						dispatch_async(dispatch_get_main_queue(), ^{ // go back to the main thread
 							NSUserDefaults *preferences = [NSUserDefaults standardUserDefaults];
 							[preferences setObject:[NSString stringWithFormat:@"https://raw.githubusercontent.com/iCrazeiOS/ReBoom-Levels/main/Levels/%@.plhs", vc.selectedCustomLevel[@"filename"]] forKey:@"reboom_CustomLevelURL"];
-							[preferences release];
 							[levelURLItem setValue:vc.selectedCustomLevel[@"display_name"]]; // set button text to level name
 
 							vc.selectedCustomLevel = nil; // reset
