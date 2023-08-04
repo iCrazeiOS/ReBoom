@@ -67,4 +67,4 @@ Step 6) If all goes well, you should be able to launch **Boom!** from your homes
 
 ## Contact
 
-Find me in the [**Boom!** Discord server](https://discord.gg/wgrbBPvrQ7) (iCraze#3017).
+Find me in the [**Boom!** Discord server](https://discord.gg/wgrbBPvrQ7) (@icraze).
