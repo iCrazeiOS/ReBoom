@@ -100,9 +100,9 @@ BOOL shouldReplaceLevel = NO;
 		NSDictionary *dict = [NSPropertyListSerialization propertyListWithData:data options:NSPropertyListImmutable format:NULL error:NULL];
 		level = [NSMutableDictionary dictionaryWithDictionary:level];
 		NSString *customName = [dict objectForKey:@"CustomLevelName"];
-		if (!customName) {
+		if (!customName) { // If custom level doesn't have a name, fallback to "Custom Level"
 			level[@"LevelName"] = @"Custom Level";
-		} else {
+		} else { // Otherwise, clean up the name and use that
 			customName = [customName stringByReplacingOccurrencesOfString:@"Custom_" withString:@""];
 			customName = [customName stringByReplacingOccurrencesOfString:@"_" withString:@" "];
 			level[@"LevelName"] = customName;
