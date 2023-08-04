@@ -25,7 +25,7 @@ ReBoom adds new functionality and fixes to the game.
 
 ## Installation with a jailbreak:
 
-Step 1) Install **Boom!** (either from the App Store, or by using **Vanilla.ipa** from this repo)
+Step 1) Install **Boom!** (either from the App Store, or by using **Boom.ipa** from this repo)
 
 Step 2) Install **ReBoom** from [My Boom Repo](https://boom.icrazeios.com/)
 
