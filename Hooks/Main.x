@@ -5,10 +5,23 @@
 
 #import "Headers/Main.h"
 
-NSString *getLevelURL() {
+NSString *getCustomLevelURL() {
 	NSUserDefaults *preferences = [NSUserDefaults standardUserDefaults];
 	NSString *customLevelURL = [preferences objectForKey:@"reboom_CustomLevelURL"];
 	return customLevelURL ?: @"";
+}
+
+void saveCustomLevel() {
+	NSURL *url = [NSURL URLWithString:getCustomLevelURL()];
+	NSData *data = [NSData dataWithContentsOfURL:url];
+	if (!data) {
+		showAlert(@"Error: The URL could not be fetched", @"Dismiss");
+		return;
+	}
+	NSString *path = [NSString stringWithFormat:@"%@Custom_Level.plhs", [[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask][0]];
+	if ([path hasPrefix:@"file://"]) path = [path substringFromIndex:7];
+	if ([path hasPrefix:@"localhost"]) path = [path substringFromIndex:9];
+	[data writeToFile:path atomically:YES];
 }
 
 // Load TAS recording
@@ -44,34 +57,53 @@ void loadReplay(NSString *name) {
 	[fileContent release];
 }
 
-// TAS, Unlocks, Pause Bug, Disable Tutorials
+BOOL shouldReplaceLevel = NO;
+
+%hook NSBundle
+-(NSString *)pathForResource:(NSString *)resource ofType:(NSString *)type inDirectory:(NSString *)directory {
+	if (!shouldReplaceLevel) return %orig;
+	shouldReplaceLevel = NO;
+	if ([directory isEqualToString:@""] && [type isEqualToString:@"plhs"]) { // if loading level
+		if ([resource isEqualToString:@"StartScreen"] || [resource isEqualToString:@"ThemeSelect"]) return %orig; // blacklist
+
+		NSString *levelURL = getCustomLevelURL();
+		if ([levelURL isEqualToString:@""]) return %orig; // do nothing if custom level is disabled
+
+		// get path of <documents directory>/Custom_Level_<level name>.plhs
+		NSString *path = [NSString stringWithFormat:@"%@Custom_Level.plhs", [[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask][0]];
+		if ([path hasPrefix:@"file://"]) path = [path substringFromIndex:7];
+		if ([path hasPrefix:@"localhost"]) path = [path substringFromIndex:9];
+
+		return path;
+	}
+	return %orig;
+}
+%end
+
+// TAS, Unlocks, Pause bug, Disable tutorials, Custom level name
 %hook TrialSession
 -(id)initWithLevel:(id)level challenge:(id)challenge tournament:(id)tournament {
 	if (challenge || tournament) return %orig;
+	shouldReplaceLevel = YES;
 
-	NSString *customLevelURL = getLevelURL();
-	// switch to custom level url if string is not empty
-	if (customLevelURL && ![customLevelURL isEqualToString:@""]) {
-		// verify that the URL is valid
-		NSData *data = [NSData dataWithContentsOfURL:[NSURL URLWithString:customLevelURL]];
-		if (data) {
-			NSDictionary *plistDict = [NSPropertyListSerialization propertyListWithData:data options:NSPropertyListImmutable format:NULL error:NULL];
-			level = [NSMutableDictionary dictionaryWithDictionary:level];
-			level[@"url"] = customLevelURL;
-			if ([plistDict objectForKey:@"SPRITES_INFO"]) {
-				if ([plistDict objectForKey:@"CustomLevelName"]) {
-					NSString *customLevelName = [plistDict objectForKey:@"CustomLevelName"];
-					customLevelName = [customLevelName stringByReplacingOccurrencesOfString:@"Custom_" withString:@""];
-					customLevelName = [customLevelName stringByReplacingOccurrencesOfString:@"_" withString:@" "];
-					level[@"LevelName"] = customLevelName;
-				} else level[@"LevelName"] = @"Custom Level";
-			} else {
-				showAlert(@"Error: The custom level seems to be invalid", @"Dismiss");
-				return %orig;
-			}
+	NSString *customLevelURL = getCustomLevelURL();
+	if (![customLevelURL isEqualToString:@""]) {
+		// get path of <documents directory>/Custom_Level.plhs
+		NSString *path = [NSString stringWithFormat:@"%@Custom_Level.plhs", [[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask][0]];
+		if ([path hasPrefix:@"file://"]) path = [path substringFromIndex:7];
+		if ([path hasPrefix:@"localhost"]) path = [path substringFromIndex:9];
+
+		// Set the custom level name
+		NSData *data = [NSData dataWithContentsOfFile:path];
+		NSDictionary *dict = [NSPropertyListSerialization propertyListWithData:data options:NSPropertyListImmutable format:NULL error:NULL];
+		level = [NSMutableDictionary dictionaryWithDictionary:level];
+		NSString *customName = [dict objectForKey:@"CustomLevelName"];
+		if (!customName) {
+			level[@"LevelName"] = @"Custom Level";
 		} else {
-			showAlert(@"Error: The custom level URL seems to be invalid (or could not be fetched)", @"Dismiss");
-			return %orig;
+			customName = [customName stringByReplacingOccurrencesOfString:@"Custom_" withString:@""];
+			customName = [customName stringByReplacingOccurrencesOfString:@"_" withString:@" "];
+			level[@"LevelName"] = customName;
 		}
 	}
 
@@ -99,10 +131,10 @@ void loadReplay(NSString *name) {
 	if (getPrefBool(@"EverythingUnlocked")) [[%c(LevelHandler) sharedInstance] unLockNextLevel];
 
 	// replay mode
-	if (getPrefBool(@"ReplayMode") && ![self isChallenge] && ![self isTournament] && [getLevelURL() isEqualToString:@""]) loadReplay([self levelId]);
+	if (getPrefBool(@"ReplayMode") && ![self isChallenge] && ![self isTournament] && [getCustomLevelURL() isEqualToString:@""]) loadReplay([self levelId]);
 
 	// record mode
-	if (getPrefBool(@"RecordMode") && ![self isChallenge] && ![self isTournament] && [getLevelURL() isEqualToString:@""]) {
+	if (getPrefBool(@"RecordMode") && ![self isChallenge] && ![self isTournament] && [getCustomLevelURL() isEqualToString:@""]) {
 		if (recording) [recording setString:@""];
 		else recording = [[NSMutableString alloc] init];
 	}
@@ -291,7 +323,7 @@ int currentHeaderLabel = 0; // used for setting custom text
 		// use rangeOfString instead of containsString for iOS 7 compatibility
 		BOOL containsFacebook = [((CCLabelTTF *)[orig valueForKey:@"titleLabel"]).string rangeOfString:@"Facebook"].location != NSNotFound;
 		if (containsFacebook) { // modify the facebook button
-			levelURLItem = [%c(SettingsItem) itemWithTitle:@"Custom Level" value:[getLevelURL() isEqualToString:@""] ? @"Unset" : @"Set" type:1];
+			levelURLItem = [%c(SettingsItem) itemWithTitle:@"Custom Level" value:[getCustomLevelURL() isEqualToString:@""] ? @"Unset" : @"Set" type:1];
 			[levelURLItem setIcon:[%c(HSAdjustedSprite) spriteWithSpriteFrameName:@"ui-icon-settings-icloud-sync.png"]];
 			return levelURLItem;
 		}
@@ -446,6 +478,7 @@ NSString *lastReBoomValue = nil;
 				if (data) { // url fetched successfully
 					NSDictionary *plistDict = [NSPropertyListSerialization propertyListWithData:data options:NSPropertyListImmutable format:NULL error:NULL];
 					if ([plistDict objectForKey:@"SPRITES_INFO"]) { // valid level
+						saveCustomLevel();
 						if ([plistDict objectForKey:@"CustomLevelName"]) customName = [plistDict objectForKey:@"CustomLevelName"];
 					} else { // invalid level
 						showAlert(@"Error: The URL you provided does not seem to be a valid level", @"Dismiss");
@@ -480,9 +513,10 @@ NSString *lastReBoomValue = nil;
 						while (!vc.selectedCustomLevel) usleep(100000); // wait until not nil
 						dispatch_async(dispatch_get_main_queue(), ^{ // go back to the main thread
 							NSUserDefaults *preferences = [NSUserDefaults standardUserDefaults];
-							[preferences setObject:[NSString stringWithFormat:@"https://raw.githubusercontent.com/iCrazeiOS/ReBoom-Levels/main/Levels/%@.plhs", vc.selectedCustomLevel[@"filename"]] forKey:@"reboom_CustomLevelURL"];
+							NSString *customLevelURL = [NSString stringWithFormat:@"https://raw.githubusercontent.com/iCrazeiOS/ReBoom-Levels/main/Levels/%@.plhs", vc.selectedCustomLevel[@"filename"]];
+							[preferences setObject:customLevelURL forKey:@"reboom_CustomLevelURL"];
 							[levelURLItem setValue:vc.selectedCustomLevel[@"display_name"]]; // set button text to level name
-
+							saveCustomLevel();
 							vc.selectedCustomLevel = nil; // reset
 						});
 					});
