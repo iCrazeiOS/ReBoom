@@ -13,7 +13,7 @@ ReBoom adds new functionality and fixes to the game.
 #### Current features:
 - Custom server (hosted by Banana)
 - Ability to load custom levels
-	- Levels can be created via [This tool](https://github.com/lachylegend/Boom-Level-Editor)
+	- Levels can be created via [this tool](https://github.com/lachylegend/Boom-Level-Editor)
 	- Community level repo accessible via settings menu
 - Full TAS recording/replay functionality
 - Keyboard controls (for iPads & Apple Silicon Macs)
@@ -33,7 +33,7 @@ Step 3) (Optional) Install **Boom Fullscreen Patch** from the same repo. This wi
 
 ## Installation without a jailbreak:
 
-*There are a few ways to install ReBoom without a jailbreak, but I will only be covering **Sideloadly**/**Jailbreaks.app**. If you know how to use other methods, such as AltStore, feel free. Just make sure that you do not change the bundle ID of the app.*
+*There are a few ways to install ReBoom without a jailbreak, but I will only be covering **Sideloadly**/**Jailbreaks.app**. If you know how to use other methods, such as AltStore, feel free.*
 
 ### Method one (Jailbreaks.app):
 
