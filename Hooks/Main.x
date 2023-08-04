@@ -24,6 +24,10 @@ void saveCustomLevel() {
 	[data writeToFile:path atomically:YES];
 }
 
+BOOL isCustomLevelEnabled() {
+	return ![getCustomLevelURL() isEqualToString:@""];
+}
+
 // Load TAS recording
 void loadReplay(NSString *name) {
 	tas.length = 0;
@@ -131,10 +135,10 @@ BOOL shouldReplaceLevel = NO;
 	if (getPrefBool(@"EverythingUnlocked")) [[%c(LevelHandler) sharedInstance] unLockNextLevel];
 
 	// replay mode
-	if (getPrefBool(@"ReplayMode") && ![self isChallenge] && ![self isTournament] && [getCustomLevelURL() isEqualToString:@""]) loadReplay([self levelId]);
+	if (getPrefBool(@"ReplayMode") && ![self isChallenge] && ![self isTournament] && !isCustomLevelEnabled()) loadReplay([self levelId]);
 
 	// record mode
-	if (getPrefBool(@"RecordMode") && ![self isChallenge] && ![self isTournament] && [getCustomLevelURL() isEqualToString:@""]) {
+	if (getPrefBool(@"RecordMode") && ![self isChallenge] && ![self isTournament] && !isCustomLevelEnabled()) {
 		if (recording) [recording setString:@""];
 		else recording = [[NSMutableString alloc] init];
 	}
@@ -165,10 +169,10 @@ BOOL shouldReplaceLevel = NO;
 
 // on level completion
 -(void)goal:(float)goal {
-	if (getPrefBool(@"RecordMode") && recording && ![recording isEqualToString:@""]) {
+	if (getPrefBool(@"RecordMode") && recording && ![recording isEqualToString:@""] && !isCustomLevelEnabled()) {
 		HSAlertView *alertView = [[%c(HSAlertView) alloc] initWithTitle:@"ReBoom" message:@"Would you like to save the TAS recording?" delegate:[[%c(HSAlertView) alloc] init] cancelButtonTitle:@"No" otherButtonTitles:@"Yes", nil];
 		[alertView show];
-	} else if (getPrefBool(@"ReplayMode") && ![self isChallenge] && ![self isTournament]) {
+	} else if (getPrefBool(@"ReplayMode") && ![self isChallenge] && ![self isTournament] && !isCustomLevelEnabled()) {
 		NSArray *array = [[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask];
 		NSString *path = [NSString stringWithFormat:@"%@/%@%@", ((NSURL *)array[0]).path, [self levelId], TAS_EXT];
 		if ([[NSFileManager defaultManager] fileExistsAtPath:path]) showAlert(@"TAS playback complete", @"Dismiss");
@@ -323,7 +327,7 @@ int currentHeaderLabel = 0; // used for setting custom text
 		// use rangeOfString instead of containsString for iOS 7 compatibility
 		BOOL containsFacebook = [((CCLabelTTF *)[orig valueForKey:@"titleLabel"]).string rangeOfString:@"Facebook"].location != NSNotFound;
 		if (containsFacebook) { // modify the facebook button
-			levelURLItem = [%c(SettingsItem) itemWithTitle:@"Custom Level" value:[getCustomLevelURL() isEqualToString:@""] ? @"Unset" : @"Set" type:1];
+			levelURLItem = [%c(SettingsItem) itemWithTitle:@"Custom Level" value:(isCustomLevelEnabled() ? @"Set" : @"Unset") type:1];
 			[levelURLItem setIcon:[%c(HSAdjustedSprite) spriteWithSpriteFrameName:@"ui-icon-settings-icloud-sync.png"]];
 			return levelURLItem;
 		}
