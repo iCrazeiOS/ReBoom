@@ -133,7 +133,14 @@ BOOL shouldReplaceLevel = NO;
 	if (getPrefBool(@"EverythingUnlocked")) [[%c(LevelHandler) sharedInstance] unLockNextLevel];
 
 	// replay mode
-	if (getPrefBool(@"ReplayMode") && ![self isChallenge] && ![self isTournament] && !isCustomLevelEnabled()) loadReplay([self levelId]);
+	if (getPrefBool(@"ReplayMode") && ![self isChallenge] && ![self isTournament]) {
+		if (isCustomLevelEnabled()) { // reset TAS if we're in a custom level
+			tas.length = 0;
+			// if (tas.commands) [tas.commands release];
+		} else { // else load TAS
+			loadReplay([self levelId]);
+		}
+	}
 
 	// record mode
 	if (getPrefBool(@"RecordMode") && ![self isChallenge] && ![self isTournament] && !isCustomLevelEnabled()) {
