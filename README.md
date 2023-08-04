@@ -20,8 +20,8 @@ ReBoom adds new functionality and fixes to the game.
 - Easy way to reset a level's ghost
 - 'Unpatch' the pause bug
 - Disables iCloud/Game Center connectivity
-- Replaces in-app purchase functionality (now just gives you coins)
-- Custom options within the game's settings menu
+- Replaces in-app purchase button functionality (now just gives you coins)
+- New options are available in the game's settings menu
 
 ## Installation with a jailbreak:
 
