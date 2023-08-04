@@ -71,7 +71,7 @@ BOOL shouldReplaceLevel = NO;
 		if ([resource isEqualToString:@"StartScreen"] || [resource isEqualToString:@"ThemeSelect"]) return %orig; // blacklist
 		if ([getCustomLevelURL() isEqualToString:@""]) return %orig; // do nothing if custom level is disabled
 
-		// get path of <documents directory>/Custom_Level_<level name>.plhs
+		// get path of <documents directory>/Custom_Level.plhs
 		NSString *path = [NSString stringWithFormat:@"%@Custom_Level.plhs", [[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask][0]];
 		if ([path hasPrefix:@"file://"]) path = [path substringFromIndex:7];
 		if ([path hasPrefix:@"localhost"]) path = [path substringFromIndex:9];
