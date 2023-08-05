@@ -512,7 +512,7 @@ NSString *lastReBoomValue = nil;
 				UIViewController *gameVC = [[[UIApplication sharedApplication] keyWindow] rootViewController];
 				if ([gameVC isKindOfClass:objc_getClass("CustomNavigationViewController")]) {
 					CustomNavigationViewController *vc = (CustomNavigationViewController *)gameVC;
-					UITableView *tableView = [[UITableView alloc] initWithFrame:[[UIScreen mainScreen] bounds] style:0];
+					UITableView *tableView = [[UITableView alloc] initWithFrame:gameVC.view.bounds style:0];
 					tableView.delegate = vc;
 					tableView.dataSource = vc;
 					[gameVC.view addSubview:tableView];
