@@ -11,6 +11,13 @@ NSString *getCustomLevelURL() {
 	return customLevelURL ?: @"";
 }
 
+NSString *getCustomLevelPath() {
+	NSString *path = [NSString stringWithFormat:@"%@Custom_Level.plhs", [[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask][0]];
+	if ([path hasPrefix:@"file://"]) path = [path substringFromIndex:7];
+	if ([path hasPrefix:@"localhost"]) path = [path substringFromIndex:9];
+	return path;
+}
+
 void saveCustomLevel() {
 	NSURL *url = [NSURL URLWithString:getCustomLevelURL()];
 	NSData *data = [NSData dataWithContentsOfURL:url];
@@ -18,10 +25,7 @@ void saveCustomLevel() {
 		showAlert(@"Error: The URL could not be fetched", @"Dismiss");
 		return;
 	}
-	NSString *path = [NSString stringWithFormat:@"%@Custom_Level.plhs", [[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask][0]];
-	if ([path hasPrefix:@"file://"]) path = [path substringFromIndex:7];
-	if ([path hasPrefix:@"localhost"]) path = [path substringFromIndex:9];
-	[data writeToFile:path atomically:YES];
+	[data writeToFile:getCustomLevelPath() atomically:YES];
 }
 
 BOOL isCustomLevelEnabled() {
@@ -71,12 +75,7 @@ BOOL shouldReplaceLevel = NO;
 		if ([resource isEqualToString:@"StartScreen"] || [resource isEqualToString:@"ThemeSelect"]) return %orig; // blacklist
 		if ([getCustomLevelURL() isEqualToString:@""]) return %orig; // do nothing if custom level is disabled
 
-		// get path of <documents directory>/Custom_Level.plhs
-		NSString *path = [NSString stringWithFormat:@"%@Custom_Level.plhs", [[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask][0]];
-		if ([path hasPrefix:@"file://"]) path = [path substringFromIndex:7];
-		if ([path hasPrefix:@"localhost"]) path = [path substringFromIndex:9];
-
-		return path;
+		return getCustomLevelPath();
 	}
 	return %orig;
 }
@@ -90,13 +89,8 @@ BOOL shouldReplaceLevel = NO;
 
 	NSString *customLevelURL = getCustomLevelURL();
 	if (![customLevelURL isEqualToString:@""]) {
-		// get path of <documents directory>/Custom_Level.plhs
-		NSString *path = [NSString stringWithFormat:@"%@Custom_Level.plhs", [[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask][0]];
-		if ([path hasPrefix:@"file://"]) path = [path substringFromIndex:7];
-		if ([path hasPrefix:@"localhost"]) path = [path substringFromIndex:9];
-
 		// Set the custom level name
-		NSData *data = [NSData dataWithContentsOfFile:path];
+		NSData *data = [NSData dataWithContentsOfFile:getCustomLevelPath()];
 		NSDictionary *dict = [NSPropertyListSerialization propertyListWithData:data options:NSPropertyListImmutable format:NULL error:NULL];
 		level = [NSMutableDictionary dictionaryWithDictionary:level];
 		NSString *customName = [dict objectForKey:@"CustomLevelName"];
