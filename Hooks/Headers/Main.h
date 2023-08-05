@@ -64,10 +64,10 @@ static BOOL LOGS_ENABLED = NO;
 
 /* TAS Stuff */
 
-struct Movie {
+struct TASReplay {
 	int length;
 	NSMutableArray *commands;
 };
-struct Movie tas;
+struct TASReplay tas;
 NSMutableString *recording;
 static unsigned long frameID, lastFrameID = 0;
