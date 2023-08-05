@@ -1,5 +1,5 @@
 /*
-	Almost everything in this file is for TAS or settings.
+	Almost everything in this file is for TAS, custom levels, and in-game preferences.
 	All other options can be found in the Hooks directory.
 */
 
