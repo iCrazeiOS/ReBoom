@@ -6,7 +6,7 @@
 
 #### Bring new life to Boom!
 
-'**Boom!**' is an iOS game that abandoned by its developers a few years ago, and its servers are no longer online.
+'**Boom!**' is an iOS game that abandoned by its developers a few years ago, and its servers are no longer online. ReBoom currently supports iOS 6-17, on all devices.
 
 ReBoom adds new functionality and fixes to the game.
 
