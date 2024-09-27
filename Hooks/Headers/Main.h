@@ -51,6 +51,11 @@ static BOOL LOGS_ENABLED = NO;
 -(void)setColor:(id)color;
 @end
 
+@interface CCNode : NSObject
++(id)node;
+-(void)addChild:(id)child;
+@end
+
 @interface LevelHandler : NSObject
 +(id)sharedInstance;
 -(void)unLockNextLevel;

@@ -378,7 +378,10 @@ SettingsItem *levelURLItem, *discordItem; // special actions
 	HSLabelSafeBMFont *label = [%c(HSLabelSafeBMFont) labelWithString:customLabels[section] fntFile:@"Futura_16px_Solid.fnt"];
 	[label setColor:nil]; // black
 
-	return label;
+	id wrapper = [%c(CCNode) node];
+	[wrapper addChild:label];
+
+	return wrapper;
 }
 %end
 
