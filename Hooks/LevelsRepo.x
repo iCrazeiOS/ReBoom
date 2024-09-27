@@ -3,7 +3,7 @@
 	Used to display the list of available custom levels.
 */
 
-#import "Headers/Main.h"
+#import "Headers/LevelsRepo.h"
 
 %hook CustomNavigationViewController
 %property (nonatomic, retain) NSArray *customLevels;
