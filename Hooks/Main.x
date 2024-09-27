@@ -259,6 +259,8 @@ BOOL shouldReplaceLevel = NO;
 }
 %end
 
+
+
 // Disable checksums
 %hook Checksums
 +(BOOL)verify_file:(id)file {
@@ -270,6 +272,17 @@ BOOL shouldReplaceLevel = NO;
 // Unlock Everything
 -(BOOL)hasItem:(id)item id:(id)anId {
 	return getPrefBool(@"EverythingUnlocked") ? YES : %orig;
+}
+%end
+
+
+
+// Disable random challenge alerts, as the feature is dead
+%hook ChallengeInitiator
+-(void)scheduleInitialRandomChallengeNotification {
+}
+
+-(void)scheduleContinuesRandomChallenge {
 }
 %end
 
