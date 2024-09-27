@@ -294,14 +294,8 @@ SettingsItem *createSwitch(NSString *title, NSString *key) {
 
 HSUISwitch *replaySwitch, *recordSwitch;
 SettingsItem *levelURLItem, *discordItem; // special actions
-int currentHeaderLabel = 0; // used for setting custom text
 
 %hook Settings
--(void)onExit { // resets the counter used to show custom labels
-	%orig;
-	currentHeaderLabel = 0;
-}
-
 -(NSInteger)numberOfSectionsInTableView:(UITableView*)tableView {
 	// Tell the game how many sections we'll have
 	return 4; // 1 for the default section, plus 3 for our custom ones
@@ -376,6 +370,16 @@ int currentHeaderLabel = 0; // used for setting custom text
 	
 	return %orig;
 }
+
+// Custom settings footers
+-(id)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section {
+	NSArray *customLabels = @[@"Miscellaneous:", @"TAS Tools:", @"ReBoom by @iCrazeiOS\nThanks to Banana, Mac & lachylegend", @VERSION_STRING];
+
+	HSLabelSafeBMFont *label = [%c(HSLabelSafeBMFont) labelWithString:customLabels[section] fntFile:@"Futura_16px_Solid.fnt"];
+	[label setColor:nil]; // black
+
+	return label;
+}
 %end
 
 // this part fixes our custom switches
@@ -438,18 +442,6 @@ NSString *lastReBoomValue = nil;
 		[app performSelector:@selector(openURL:) withObject:[NSURL URLWithString:@"https://discord.gg/wgrbBPvrQ7"]];
 	}
 	%orig;
-}
-%end
-
-// Custom settings footers
-%hook Settings
--(id)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section {
-	NSArray *customLabels = @[@"Miscellaneous:", @"TAS Tools:", @"ReBoom by @iCrazeiOS\nThanks to Banana, Mac & lachylegend", @VERSION_STRING];
-
-	HSLabelSafeBMFont *label = [%c(HSLabelSafeBMFont) labelWithString:customLabels[section] fntFile:@"Futura_16px_Solid.fnt"];
-	[label setColor:nil]; // black
-
-	return label;
 }
 %end
 
