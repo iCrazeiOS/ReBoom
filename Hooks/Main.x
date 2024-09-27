@@ -442,17 +442,14 @@ NSString *lastReBoomValue = nil;
 %end
 
 // Custom settings footers
-// almost definitely a better way to do this, but it works
-%hook HSLabelSafeBMFont
--(void)setString:(NSString *)string updateLabel:(BOOL)update {
-	if ([string hasPrefix:@"Boom! version "]) { // replace original labels
-		string = @"";
-		// loop through each of our labels
-		NSArray *customLabels = @[@"Miscellaneous:", @"TAS Tools:", @"ReBoom by @iCrazeiOS\nThanks to Banana, Mac & lachylegend", @VERSION_STRING];
-		string = ((currentHeaderLabel < [customLabels count]) ? customLabels[currentHeaderLabel] : @"");
-		currentHeaderLabel++;
-	}
-	%orig(string, update);
+%hook Settings
+-(id)tableView:(UITableView *)tableView viewForFooterInSection:(NSInteger)section {
+	NSArray *customLabels = @[@"Miscellaneous:", @"TAS Tools:", @"ReBoom by @iCrazeiOS\nThanks to Banana, Mac & lachylegend", @VERSION_STRING];
+
+	HSLabelSafeBMFont *label = [%c(HSLabelSafeBMFont) labelWithString:customLabels[section] fntFile:@"Futura_16px_Solid.fnt"];
+	[label setColor:nil]; // black
+
+	return label;
 }
 %end
 

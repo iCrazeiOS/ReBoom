@@ -46,6 +46,11 @@ static BOOL LOGS_ENABLED = NO;
 -(void)setSwitchElement:(HSUISwitch *)element state:(int)state;
 @end
 
+@interface HSLabelSafeBMFont : NSObject
++(id)labelWithString:(NSString *)string fntFile:(NSString *)fntFile;
+-(void)setColor:(id)color;
+@end
+
 @interface LevelHandler : NSObject
 +(id)sharedInstance;
 -(void)unLockNextLevel;
