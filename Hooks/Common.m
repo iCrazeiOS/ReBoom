@@ -18,7 +18,7 @@ void setPrefBool(NSString *key, BOOL value) {
 
 // Show the game's custom alert view
 void showAlert(NSString *message, NSString *buttonText) {
-	HSAlertView *delegate = [[objc_getClass("HSAlertView") alloc] init];
-	HSAlertView *alertView = [[objc_getClass("HSAlertView") alloc] initWithTitle:@"ReBoom" message:message delegate:delegate cancelButtonTitle:buttonText otherButtonTitles:nil];
+	HSAlertView *alertView = [[objc_getClass("HSAlertView") alloc] initWithTitle:@"ReBoom" message:message delegate:nil cancelButtonTitle:buttonText otherButtonTitles:nil];
+	alertView.delegate = alertView;
 	[alertView show];
 }

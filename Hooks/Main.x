@@ -35,7 +35,6 @@ BOOL isCustomLevelEnabled() {
 // Load TAS recording
 void loadReplay(NSString *name) {
 	tas.length = 0;
-	if (tas.commands) [tas.commands release];
 	tas.commands = [[NSMutableArray alloc] init];
 
 	NSArray *array = [[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask];
@@ -61,8 +60,6 @@ void loadReplay(NSString *name) {
 			tas.length = frame;
 		}
 	}
-
-	[fileContent release];
 }
 
 // Custom levels
@@ -169,7 +166,8 @@ BOOL shouldReplaceLevel = NO;
 // on level completion
 -(void)goal:(float)goal {
 	if (getPrefBool(@"RecordMode") && recording && ![recording isEqualToString:@""] && !isCustomLevelEnabled()) {
-		HSAlertView *alertView = [[%c(HSAlertView) alloc] initWithTitle:@"ReBoom" message:@"Would you like to save the TAS recording?" delegate:[[%c(HSAlertView) alloc] init] cancelButtonTitle:@"No" otherButtonTitles:@"Yes", nil];
+		HSAlertView *alertView = [[%c(HSAlertView) alloc] initWithTitle:@"ReBoom" message:@"Would you like to save the TAS recording?" delegate:nil cancelButtonTitle:@"No" otherButtonTitles:@"Yes", nil];
+		alertView.delegate = alertView;
 		[alertView show];
 	} else if (getPrefBool(@"ReplayMode") && ![self isChallenge] && ![self isTournament] && !isCustomLevelEnabled()) {
 		NSArray *array = [[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask];
@@ -301,7 +299,6 @@ SettingsItem *createSwitch(NSString *title, NSString *key) {
 
 	// tldr: hacky code to fix a weird game bug
 	[item setSwitchElement:[itemSwitch initWithState:0 offFont:nil onFont:nil onStateChange:nil] state:1];
-	[itemSwitch release];
 	return item;
 }
 
@@ -413,22 +410,23 @@ NSString *lastReBoomValue = nil;
 		!lastCallWasReBoom ? (self.reboomValue = lastReBoomValue) : (lastReBoomValue = self.reboomValue); // retain key
 
 		// allows us to make these two switches conflict (only one can be on at a time)
-		if ([self.reboomValue isEqualToString:@"ReplayMode"]) replaySwitch = self;
-		else if ([self.reboomValue isEqualToString:@"RecordMode"]) recordSwitch = self;
+		NSString *key = self.reboomValue;
+		if ([key isEqualToString:@"ReplayMode"]) replaySwitch = self;
+		else if ([key isEqualToString:@"RecordMode"]) recordSwitch = self;
 
 		// the state is flipped for some reason
 		// 1 is off, 0 is on
-		void *handler = ^void(HSUISwitch *sender) {
-			setPrefBool(self.reboomValue, !self.state);
-			if ([self.reboomValue isEqualToString:@"ReplayMode"] && !self.state) {
+		id handler = ^void(int newState) {
+			setPrefBool(key, newState == 0);
+			if ([key isEqualToString:@"ReplayMode"] && newState == 0) {
 				setPrefBool(@"RecordMode", 0); // set pref
 				[recordSwitch setState:1 animate:YES]; // flip switch
-			} else if ([self.reboomValue isEqualToString:@"RecordMode"] && !self.state) {
+			} else if ([key isEqualToString:@"RecordMode"] && newState == 0) {
 				setPrefBool(@"ReplayMode", 0); // set pref
 				[replaySwitch setState:1 animate:YES]; // flip switch
 			}
 		};
-		return %orig(getPrefBool(self.reboomValue) ? 0 : 1, @"Futura_16px_Solid.fnt", @"Futura_16px_Outline.fnt", handler);
+		return %orig(getPrefBool(key) ? 0 : 1, @"Futura_16px_Solid.fnt", @"Futura_16px_Outline.fnt", handler);
 	}
 	return %orig;
 }
@@ -449,7 +447,8 @@ NSString *lastReBoomValue = nil;
 			[switchElement stateChanged]; // set the preference value
 		}
 	} else if (self == levelURLItem) {
-		HSAlertView *alertView = [[%c(HSAlertView) alloc] initWithTitle:@"Custom Level URL" message:nil delegate:[[%c(HSAlertView) alloc] init] cancelButtonTitle:@"Cancel" otherButtonTitles:@"Save", @"Browse", nil];
+		HSAlertView *alertView = [[%c(HSAlertView) alloc] initWithTitle:@"Custom Level URL" message:nil delegate:nil cancelButtonTitle:@"Cancel" otherButtonTitles:@"Save", @"Browse", nil];
+		alertView.delegate = alertView;
 		alertView.style = 1; // style with textfield
 		alertView.inputTextField.placeholder = @"Leave blank to disable";
 		[alertView show];

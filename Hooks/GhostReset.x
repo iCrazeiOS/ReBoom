@@ -13,8 +13,8 @@
 
 -(void)unselected {
 	if ([[NSDate date] timeIntervalSince1970] - self.selected_time >= 3) {
-		HSAlertView *delegate = [[%c(HSAlertView) alloc] init];
-		HSAlertView *alertView = [[%c(HSAlertView) alloc] initWithTitle:@"Remove Ghost?" message:[NSString stringWithFormat:@"Are you sure you want to reset your ghost for level: '%@'?", [self valueForKey:@"levelId"]] delegate:delegate cancelButtonTitle:@"Yes" otherButtonTitles:@"No", nil];
+		HSAlertView *alertView = [[%c(HSAlertView) alloc] initWithTitle:@"Remove Ghost?" message:[NSString stringWithFormat:@"Are you sure you want to reset your ghost for level: '%@'?", [self valueForKey:@"levelId"]] delegate:nil cancelButtonTitle:@"Yes" otherButtonTitles:@"No", nil];
+		alertView.delegate = alertView;
 		[alertView show];
 	} else %orig;
 }

@@ -1,3 +1,4 @@
 .theos/
-packages/*debug*.deb
+packages/
 *.DS_Store
+Random-Files/
